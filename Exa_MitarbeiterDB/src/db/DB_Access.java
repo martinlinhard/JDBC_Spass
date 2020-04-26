@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.List;
 import java.util.TreeSet;
+import javax.swing.JOptionPane;
 import utils.IOHandler;
 
 /**
@@ -150,7 +151,10 @@ public class DB_Access {
         ResultSet s = this.getAllEmployeesST.executeQuery();
         TreeSet<Employee> emps = Employee.getEmployeesSetFromSet(s);
         
-        if (emps.contains(e)) return false;
+        if (emps.contains(e)) {
+            JOptionPane.showMessageDialog(null, "Employee already exists!");
+            return false;
+        }
         
         int persNR = emps.isEmpty() ? 1 : (emps.last().getPersNR() + 1);
         
