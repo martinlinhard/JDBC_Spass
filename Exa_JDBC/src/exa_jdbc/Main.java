@@ -6,6 +6,9 @@
 package exa_jdbc;
 
 import java.sql.SQLException;
+import java.time.LocalDate;
+
+import exa_jdbc.beans.Student;
 
 /**
  *
@@ -19,7 +22,12 @@ public class Main {
   public static void main(String[] args) {
     try {
 		DBTester tester = new DBTester();
-		tester.connect("postgres");
+		tester.connect("studentdb");
+		//tester.createTable();
+		tester.insertStudent(new Student(0, 1, "Leon", "Anghel", LocalDate.now()));
+		tester.insertStudent(new Student(0, 2, "Nico", "Baumann", LocalDate.now()));
+		tester.insertStudent(new Student(0, 3, "Adrian", "Berner", LocalDate.now()));
+		tester.getStudents();
 		tester.disconnect();
 	} catch (ClassNotFoundException e) {
 		e.printStackTrace();
