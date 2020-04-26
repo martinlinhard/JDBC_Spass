@@ -297,13 +297,18 @@ public class MainGUI extends javax.swing.JFrame {
                 this.lbDB.setText("Database: none");
                 this.btAdd.setEnabled(false);
                 this.itemDelete.setEnabled(false);
+                this.cbAb.setEnabled(false);
+                this.cbGe.setEnabled(false);
                 this.btConn.setText("Connect");
                 this.isConnected = false;
             } else {
                 this.access.connect();
+                this.access.setupStatements();
                 this.lbDB.setText("Database: mitarbeiterdb");
                 this.btAdd.setEnabled(true);
                 this.itemDelete.setEnabled(true);
+                this.cbAb.setEnabled(true);
+                this.cbGe.setEnabled(true);
                 this.btConn.setText("Disconnect");
                 this.isConnected = true;
             }

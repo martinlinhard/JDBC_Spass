@@ -58,12 +58,20 @@ public class DB_Access {
         }
     }
 
-    private void setupStatements() throws SQLException {
+    public void setupStatements() throws SQLException {
         this.insertEmployeeST = this.dbConnection.prepareStatement("INSERT INTO mitarbeiter (pers_nr, name, vorname, geb_datum, gehalt, abt_nr, geschlecht) VALUES (?, ?, ?, ?, ?, ?, ?);");
         this.getEmployeesForDepartmentST = this.dbConnection.prepareStatement("SELECT * FROM mitarbeiter WHERE pers_nr=?;");
         this.getAVGSalForGenderST = this.dbConnection.prepareStatement("SELECT AVG(gehalt) AS \"avg\" FROM mitarbeiter WHERE geschlecht=?;");
         this.getAllEmployeesST = this.dbConnection.prepareStatement("SELECT * FROM mitarbeiter;");
         this.deleteEmployeeST = this.dbConnection.prepareStatement("DELETE FROM mitarbeiter WHERE pers_nr = ?");
+    }
+    
+    private void closeStatements() throws SQLException {
+        this.insertEmployeeST.close();
+        this.getEmployeesForDepartmentST.close();
+        this.getAVGSalForGenderST.close();
+        this.getAllEmployeesST.close();
+        this.deleteEmployeeST.close();
     }
 
     private void setup() throws SQLException {
@@ -94,6 +102,7 @@ public class DB_Access {
     public void disconnect() throws SQLException {
         if (this.dbConnection != null) {
             this.dbConnection.close();
+            this.closeStatements();
         }
     }
 
