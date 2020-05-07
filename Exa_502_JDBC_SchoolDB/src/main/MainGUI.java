@@ -1,22 +1,30 @@
 package main;
 
+import database.DB_StatementExecutionHandler;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 /**
  *
  * @author martin
  */
 public class MainGUI extends javax.swing.JFrame {
 
+    private DB_StatementExecutionHandler exec;
+    private boolean connected = false;
+
     /**
      * Creates new form MainGUI
      */
-    public MainGUI() {
+    public MainGUI() throws ClassNotFoundException, SQLException {
         initComponents();
+        this.exec = new DB_StatementExecutionHandler();
     }
 
     /**
@@ -65,7 +73,7 @@ public class MainGUI extends javax.swing.JFrame {
         btConnect.setText("Connect");
         btConnect.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btConnectActionPerformed(evt);
+                onConnect(evt);
             }
         });
         jPanel1.add(btConnect);
@@ -237,9 +245,23 @@ public class MainGUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btConnectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btConnectActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btConnectActionPerformed
+    private void onConnect(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onConnect
+        try {
+            if (!this.connected) {
+                //Not connected --> Connect
+                this.exec.connect();
+                this.btConnect.setText("Disconnect");
+                this.connected = true;
+            } else {
+                //Already connected --> Disconnect
+                this.exec.disconnect();
+                this.btConnect.setText("Connect");
+                this.connected = false;
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_onConnect
 
     private void btNewAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btNewAddActionPerformed
         // TODO add your handling code here:
@@ -283,7 +305,11 @@ public class MainGUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MainGUI().setVisible(true);
+                try {
+                    new MainGUI().setVisible(true);
+                } catch (ClassNotFoundException | SQLException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
