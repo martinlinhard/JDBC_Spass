@@ -34,8 +34,8 @@ public class DB_StatementCache {
                 + "	VALUES (?, ?, ?, ?, ?, ?)\n"
                 + "     RETURNING studentid;");
 
-        PreparedStatement getS = this.dbConn.prepareStatement("SELECT studentid AS \"studentid\", g.classname AS \"classname\", catno AS \"catno\", firstname AS \"firstname\", surname AS \"surname\", gender AS \"gender\", birthdate AS \"dateofbirth\"\n"
-                + "FROM student\n"
+        PreparedStatement getS = this.dbConn.prepareStatement("SELECT studentid AS \"studentid\", g.classname AS \"classname\", catno AS \"catno\", firstname AS \"firstname\", surname AS \"surname\", gender AS \"gender\", dateofbirth AS \"dateofbirth\"\n"
+                + "FROM student s\n"
                 + "INNER JOIN grade g ON s.classid = g.classid;");
 
         PreparedStatement getG = this.dbConn.prepareStatement("SELECT * FROM grade;");

@@ -5,8 +5,11 @@ import beans.Student;
 import database.DB_StatementExecutionHandler;
 import io.IOHandler;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +17,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import utils.ThreadUtils;
 
 /*
@@ -63,6 +67,7 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         btConnect = new javax.swing.JButton();
         btImport = new javax.swing.JButton();
+        btExport = new javax.swing.JButton();
         btClose = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
@@ -91,7 +96,7 @@ public class MainGUI extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Database"));
-        jPanel1.setLayout(new java.awt.GridLayout(1, 3));
+        jPanel1.setLayout(new java.awt.GridLayout(1, 4));
 
         btConnect.setText("Connect");
         btConnect.addActionListener(new java.awt.event.ActionListener() {
@@ -109,6 +114,15 @@ public class MainGUI extends javax.swing.JFrame {
             }
         });
         jPanel1.add(btImport);
+
+        btExport.setText("Export");
+        btExport.setEnabled(false);
+        btExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onExport(evt);
+            }
+        });
+        jPanel1.add(btExport);
 
         btClose.setText("Close");
         btClose.addActionListener(new java.awt.event.ActionListener() {
@@ -382,6 +396,7 @@ public class MainGUI extends javax.swing.JFrame {
         this.btFastBack.setEnabled(!this.btFastBack.isEnabled());
         this.btFastForward.setEnabled(!this.btFastForward.isEnabled());
         this.btImport.setEnabled(!this.btImport.isEnabled());
+        this.btExport.setEnabled(!this.btExport.isEnabled());
 
     }
 
@@ -405,6 +420,7 @@ public class MainGUI extends javax.swing.JFrame {
                 this.connected = false;
             }
             this.btImport.setEnabled(this.connected);
+            this.btExport.setEnabled(this.connected);
             this.btNewAdd.setEnabled(connected);
             this.btForward.setEnabled(connected);
             this.btBack.setEnabled(connected);
@@ -412,7 +428,7 @@ public class MainGUI extends javax.swing.JFrame {
             this.btFastForward.setEnabled(connected);
             this.cbGrade.setEnabled(connected);
         } catch (SQLException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Error connecting to database!");
         }
     }//GEN-LAST:event_onConnect
 
@@ -458,7 +474,9 @@ public class MainGUI extends javax.swing.JFrame {
                     this.btCancel.setVisible(false);
                     this.updateClass();
                 } catch (SQLException ex) {
-                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                    JOptionPane.showMessageDialog(this, "Error inserting user!");
+                } catch (DateTimeParseException e) {
+                    JOptionPane.showMessageDialog(this, "Error parsing date!");
                 }
             });
 
@@ -515,7 +533,7 @@ public class MainGUI extends javax.swing.JFrame {
                 this.currentClass = this.cbGrade.getItemAt(0);
                 this.updateClass();
             } catch (FileNotFoundException | SQLException ex) {
-                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(this, "Error opening input file!");
             }
         });
     }//GEN-LAST:event_onImport
@@ -526,7 +544,7 @@ public class MainGUI extends javax.swing.JFrame {
             ThreadUtils.close();
             System.exit(0);
         } catch (SQLException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(this, "Error closing connection!");
         }
     }//GEN-LAST:event_onClose
 
@@ -564,6 +582,15 @@ public class MainGUI extends javax.swing.JFrame {
         this.state = state.NEW;
     }//GEN-LAST:event_onCancel
 
+    private void onExport(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onExport
+        try {
+            List<Student> allStudents = this.exec.getAllStudents();
+            IOHandler.export(allStudents);
+        } catch (IOException | SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error exporting file!");
+        }
+    }//GEN-LAST:event_onExport
+
     /**
      * @param args the command line arguments
      */
@@ -580,15 +607,11 @@ public class MainGUI extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+        
         //</editor-fold>
 
         /* Create and display the form */
@@ -606,6 +629,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JButton btCancel;
     private javax.swing.JButton btClose;
     private javax.swing.JButton btConnect;
+    private javax.swing.JButton btExport;
     private javax.swing.JButton btFastBack;
     private javax.swing.JButton btFastForward;
     private javax.swing.JButton btForward;

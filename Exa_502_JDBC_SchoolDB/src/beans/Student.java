@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -162,9 +163,22 @@ public class Student implements Comparable<Student> {
         return values;
     }
 
+    public static List<Student> mergeClasses(Map<String, List<Student>> students) {
+        List<Student> newStudents = new ArrayList<>();
+        for (List<Student> l : students.values()) {
+            newStudents.addAll(l);
+        }
+        return newStudents;
+    }
+
     @Override
     public String toString() {
         return String.format("%d;%s;%s;%s;%s;%s", studentID, classname.toUpperCase(), surname.toUpperCase(), firstname, gender.charAt(0) + "", DTF.format(dateOfBirth));
+    }
+
+    public String toCSVString() {
+        //Klasse;Familienname;Vorname;Geschlecht;Geburtsdatum
+        return String.format("%s;%s;%s;%s;%s", this.classname, this.surname, this.firstname, this.gender, Student.DTF.format(this.dateOfBirth));
     }
 
     @Override
