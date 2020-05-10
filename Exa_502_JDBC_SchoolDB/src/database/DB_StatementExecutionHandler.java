@@ -42,11 +42,11 @@ public class DB_StatementExecutionHandler {
     }
 
     public void insertStudent(Student s, Map<String, Integer> classMappings) throws SQLException {
-        if (classMappings.containsKey(s.getClassname().toUpperCase())) {
+        if (classMappings.containsKey(s.getClassname())) {
             //Class is already present
             PreparedStatement p = this.cache.getStatementForAction(StatementType.INSERT_STUDENT);
 
-            p.setInt(1, classMappings.get(s.getClassname().toUpperCase()));
+            p.setInt(1, classMappings.get(s.getClassname()));
             p.setInt(2, 0);
             p.setString(3, s.getFirstname());
             p.setString(4, s.getSurname());

@@ -170,9 +170,9 @@ public class Student implements Comparable<Student> {
     @Override
     public int compareTo(Student t) {
         if (this.surname.equals(t.surname)) {
-            return this.firstname.compareTo(t.firstname);
+            return this.firstname.compareToIgnoreCase(t.firstname);
         } else {
-            return this.surname.compareTo(t.surname);
+            return this.surname.compareToIgnoreCase(t.surname);
         }
     }
 }

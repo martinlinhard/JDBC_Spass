@@ -29,13 +29,13 @@ public class MainGUI extends javax.swing.JFrame {
 
     //Actual data
     private DB_StatementExecutionHandler exec;
-    private Map<String, Integer> classMappings;
-    private HashMap<String, List<Student>> students;
+    private Map<String, Integer> classMappings = new HashMap<>();
+    private HashMap<String, List<Student>> students = new HashMap<>();
 
     //To display stuff
-    private List<Student> currentStudents;
+    private List<Student> currentStudents = new ArrayList<>();
     private String currentClass = "";
-    private int currentIndex;
+    private int currentIndex = 0;
 
     //For gui purposes
     private boolean connected = false;
@@ -366,22 +366,23 @@ public class MainGUI extends javax.swing.JFrame {
 
         this.toggleInput();
 
-        this.btImport.setEnabled(false);
         this.btCancel.setVisible(true);
         this.btNewAdd.setText("Add");
     }
 
     private void toggleInput() {
-        this.tfFirstname.setEnabled(!this.cbGender.isEnabled());
-        this.tfSurname.setEnabled(!this.cbGender.isEnabled());
-        this.tfBirthdate.setEnabled(!this.cbGender.isEnabled());
-        this.tfGrade.setEnabled(!this.cbGender.isEnabled());
+        this.tfFirstname.setEnabled(!this.tfFirstname.isEnabled());
+        this.tfSurname.setEnabled(!this.tfSurname.isEnabled());
+        this.tfBirthdate.setEnabled(!this.tfBirthdate.isEnabled());
+        this.tfGrade.setEnabled(!this.tfGrade.isEnabled());
         this.cbGender.setEnabled(!this.cbGender.isEnabled());
-        this.cbGrade.setEnabled(!this.cbGender.isEnabled());
-        this.btForward.setEnabled(!this.cbGender.isEnabled());
-        this.btBack.setEnabled(!this.cbGender.isEnabled());
-        this.btFastBack.setEnabled(!this.cbGender.isEnabled());
-        this.btFastForward.setEnabled(!this.cbGender.isEnabled());
+        this.cbGrade.setEnabled(!this.cbGrade.isEnabled());
+        this.btForward.setEnabled(!this.btForward.isEnabled());
+        this.btBack.setEnabled(!this.btBack.isEnabled());
+        this.btFastBack.setEnabled(!this.btFastBack.isEnabled());
+        this.btFastForward.setEnabled(!this.btFastForward.isEnabled());
+        this.btImport.setEnabled(!this.btImport.isEnabled());
+
     }
 
     private void updateClass() {
@@ -420,41 +421,47 @@ public class MainGUI extends javax.swing.JFrame {
             this.reset();
             this.state = CreateState.ADD;
         } else {
-            try {
-                //TODO add student
-                String firstname = this.tfFirstname.getText();
-                String surname = this.tfSurname.getText();
-                LocalDate birthdate = LocalDate.parse(this.tfBirthdate.getText(), Student.DTF);
-                String grade = this.tfGrade.getText();
-                String gender = ((String) this.cbGender.getSelectedItem()).equals("Male") ? "m" : "w";
+            ThreadUtils.executeAsync(() -> {
+                try {
+                    //add student
+                    String firstname = this.tfFirstname.getText();
+                    String surname = this.tfSurname.getText();
+                    LocalDate birthdate = LocalDate.parse(this.tfBirthdate.getText(), Student.DTF);
+                    String grade = this.tfGrade.getText();
+                    String gender = ((String) this.cbGender.getSelectedItem()).equals("Male") ? "m" : "w";
 
-                Student s = new Student(0, grade, 0, firstname, surname, gender, birthdate);
-                this.exec.insertStudent(s, classMappings);
-                this.currentStudents = this.students.get(this.currentClass);
+                    Student s = new Student(0, grade, 0, firstname, surname, gender, birthdate);
+                    this.exec.insertStudent(s, classMappings);
+                    this.currentStudents = this.students.get(this.currentClass);
 
-                if (this.students.containsKey(grade)) {
-                    List<Student> prev = this.students.get(grade);
-                    prev.add(s);
-                    this.exec.updateStudents(this.students.get(grade));
-                    this.currentClass = grade;
-                } else {
-                    this.students.put(grade, new ArrayList<Student>() {
-                        {
-                            add(s);
-                        }
-                    });
-                    this.exec.updateStudents(this.students.get(grade));
-                    this.currentClass = grade;
-                    this.cbGrade.addItem(grade);
-                    this.cbGrade.setSelectedItem(grade);
+                    if (this.students.containsKey(grade)) {
+                        List<Student> prev = this.students.get(grade);
+                        prev.add(s);
+                        this.exec.updateStudents(this.students.get(grade));
+                        this.currentClass = grade;
+                        this.cbGrade.setSelectedItem(grade);
+                    } else {
+                        this.students.put(grade, new ArrayList<Student>() {
+                            {
+                                add(s);
+                            }
+                        });
+                        this.exec.updateStudents(this.students.get(grade));
+                        this.currentClass = grade;
+                        this.cbGrade.addItem(grade);
+                        this.cbGrade.setSelectedItem(grade);
+                    }
+
+                    this.reset();
+                    this.state = CreateState.NEW;
+                    this.btNewAdd.setText("New");
+                    this.btCancel.setVisible(false);
+                    this.updateClass();
+                } catch (SQLException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            });
 
-                this.reset();
-                this.state = CreateState.NEW;
-                this.updateClass();
-            } catch (SQLException ex) {
-                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-            }
         }
     }//GEN-LAST:event_onCreateStudent
 
