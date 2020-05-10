@@ -31,7 +31,7 @@ public class Student implements Comparable<Student> {
     private String gender;
     private LocalDate dateOfBirth;
 
-    private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     public Student(int studentID, String classname, int catno, String firstname, String surname, String gender, LocalDate dateOfBirth) {
         this.studentID = studentID;

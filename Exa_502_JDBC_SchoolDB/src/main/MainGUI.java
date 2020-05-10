@@ -6,6 +6,7 @@ import database.DB_StatementExecutionHandler;
 import io.IOHandler;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,11 +26,18 @@ import utils.ThreadUtils;
  */
 public class MainGUI extends javax.swing.JFrame {
 
+    //Actual data
     private DB_StatementExecutionHandler exec;
-    private boolean connected = false;
-
     private Map<String, Integer> classMappings;
     private HashMap<String, List<Student>> students;
+
+    //To display stuff
+    private List<Student> currentStudents;
+    private String currentClass = "";
+    private int currentIndex;
+
+    //For gui purposes
+    private boolean connected = false;
 
     /**
      * Creates new form MainGUI
@@ -63,13 +71,11 @@ public class MainGUI extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         tfGrade = new javax.swing.JTextField();
         tfFirstname = new javax.swing.JTextField();
         tfBirthdate = new javax.swing.JTextField();
         tfSurname = new javax.swing.JTextField();
-        tfAge = new javax.swing.JTextField();
         tfCatNR = new javax.swing.JTextField();
         btNewAdd = new javax.swing.JButton();
         btCancel = new javax.swing.JButton();
@@ -124,6 +130,11 @@ public class MainGUI extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         jPanel3.add(jLabel1, gridBagConstraints);
 
+        cbGrade.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onClassSelect(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -137,72 +148,83 @@ public class MainGUI extends javax.swing.JFrame {
 
         jLabel2.setText("Cat. NR");
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
         jPanel4.add(jLabel2, gridBagConstraints);
 
         jLabel3.setText("Firstname");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
         jPanel4.add(jLabel3, gridBagConstraints);
 
         jLabel4.setText("Birthdate");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
         jPanel4.add(jLabel4, gridBagConstraints);
 
         jLabel5.setText("Grade");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
         jPanel4.add(jLabel5, gridBagConstraints);
-
-        jLabel6.setText("Age");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        jPanel4.add(jLabel6, gridBagConstraints);
 
         jLabel7.setText("Surname");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
         jPanel4.add(jLabel7, gridBagConstraints);
+
+        tfGrade.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         jPanel4.add(tfGrade, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel4.add(tfFirstname, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel4.add(tfBirthdate, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel4.add(tfSurname, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel4.add(tfAge, gridBagConstraints);
 
+        tfFirstname.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel4.add(tfFirstname, gridBagConstraints);
+
+        tfBirthdate.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel4.add(tfBirthdate, gridBagConstraints);
+
+        tfSurname.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel4.add(tfSurname, gridBagConstraints);
+
+        tfCatNR.setText("sdfg");
+        tfCatNR.setEnabled(false);
         tfCatNR.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 tfCatNRActionPerformed(evt);
@@ -212,9 +234,11 @@ public class MainGUI extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         jPanel4.add(tfCatNR, gridBagConstraints);
 
         btNewAdd.setText("New");
+        btNewAdd.setEnabled(false);
         btNewAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btNewAddActionPerformed(evt);
@@ -222,57 +246,79 @@ public class MainGUI extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel4.add(btNewAdd, gridBagConstraints);
 
         btCancel.setText("Cancel");
+        btCancel.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel4.add(btCancel, gridBagConstraints);
 
         btFastBack.setText("<<");
         btFastBack.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btFastBackActionPerformed(evt);
+                onFastPrevious(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         jPanel4.add(btFastBack, gridBagConstraints);
 
         btBack.setText("<");
+        btBack.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onPrevious(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         jPanel4.add(btBack, gridBagConstraints);
 
         btForward.setText(">");
+        btForward.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onNext(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         jPanel4.add(btForward, gridBagConstraints);
 
         btFastForward.setText(">>");
+        btFastForward.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onFastForward(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 6;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         jPanel4.add(btFastForward, gridBagConstraints);
 
         jLabel8.setText("Gender");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.weightx = 1.0;
         jPanel4.add(jLabel8, gridBagConstraints);
 
         cbGender.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Male", "Female" }));
+        cbGender.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         jPanel4.add(cbGender, gridBagConstraints);
 
         jPanel2.add(jPanel4, java.awt.BorderLayout.CENTER);
@@ -281,6 +327,30 @@ public class MainGUI extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void printStudent() {
+        try {
+            Student s = this.currentStudents.get(this.currentIndex);
+
+            this.tfFirstname.setText(s.getFirstname());
+            this.tfSurname.setText(s.getSurname());
+            this.tfBirthdate.setText(Student.DTF.format(s.getDateOfBirth()));
+            if (s.getGender().equals("m")) {
+                this.cbGender.setSelectedIndex(0);
+            } else {
+                this.cbGender.setSelectedIndex(1);
+            }
+            this.tfCatNR.setText(s.getCatno() + "");
+            this.tfGrade.setText(s.getClassname());
+        } catch (IndexOutOfBoundsException e) {
+        }
+    }
+
+    private void updateClass() {
+        this.currentStudents = this.students.get(this.currentClass.trim());
+        this.currentIndex = 0;
+        this.printStudent();
+    }
 
     private void onConnect(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onConnect
         try {
@@ -305,9 +375,10 @@ public class MainGUI extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_btNewAddActionPerformed
 
-    private void btFastBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btFastBackActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btFastBackActionPerformed
+    private void onFastPrevious(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onFastPrevious
+        this.currentIndex = 0;
+        this.printStudent();
+    }//GEN-LAST:event_onFastPrevious
 
     private void tfCatNRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfCatNRActionPerformed
         // TODO add your handling code here:
@@ -327,7 +398,6 @@ public class MainGUI extends javax.swing.JFrame {
                 // ... and insert them into the db
                 for (Grade g : grades) {
                     exec.insertGrade(g);
-                    this.cbGrade.addItem(g.getClassName());
                 }
 
                 //Generate mappings
@@ -341,12 +411,19 @@ public class MainGUI extends javax.swing.JFrame {
                 //split the students into classes
                 this.students = Student.splitIntoClasses(localStudents);
 
+                //It's important to add them after the students are present,
+                // since adding them throws a ActionEvent on the ComboBox
                 for (List<Student> curr : this.students.values()) {
                     // and update their catnos
                     exec.updateStudents(curr);
                 }
-                
-                System.out.println("done");
+
+                grades.forEach((g) -> {
+                    this.cbGrade.addItem(g.getClassName());
+                });
+
+                this.currentClass = this.cbGrade.getItemAt(0);
+                this.updateClass();
             } catch (FileNotFoundException | SQLException ex) {
                 Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -362,6 +439,32 @@ public class MainGUI extends javax.swing.JFrame {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_onClose
+
+    private void onNext(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onNext
+        this.currentIndex++;
+        this.currentIndex %= this.currentStudents.size();
+        this.printStudent();
+    }//GEN-LAST:event_onNext
+
+    private void onPrevious(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onPrevious
+        if (this.currentIndex == 0) {
+            this.currentIndex = this.currentStudents.size() - 1;
+        } else {
+            this.currentIndex--;
+        }
+        this.printStudent();
+    }//GEN-LAST:event_onPrevious
+
+    private void onFastForward(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onFastForward
+        this.currentIndex = this.currentStudents.size() - 1;
+        this.printStudent();
+    }//GEN-LAST:event_onFastForward
+
+    private void onClassSelect(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClassSelect
+        String s = (String) this.cbGrade.getSelectedItem();
+        this.currentClass = s;
+        this.updateClass();
+    }//GEN-LAST:event_onClassSelect
 
     /**
      * @param args the command line arguments
@@ -417,14 +520,12 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JTextField tfAge;
     private javax.swing.JTextField tfBirthdate;
     private javax.swing.JTextField tfCatNR;
     private javax.swing.JTextField tfFirstname;
