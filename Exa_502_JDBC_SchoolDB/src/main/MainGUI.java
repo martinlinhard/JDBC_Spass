@@ -7,6 +7,7 @@ import io.IOHandler;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ public class MainGUI extends javax.swing.JFrame {
 
     //For gui purposes
     private boolean connected = false;
+    private CreateState state = CreateState.NEW;
 
     /**
      * Creates new form MainGUI
@@ -130,6 +132,7 @@ public class MainGUI extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         jPanel3.add(jLabel1, gridBagConstraints);
 
+        cbGrade.setEnabled(false);
         cbGrade.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onClassSelect(evt);
@@ -223,7 +226,6 @@ public class MainGUI extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         jPanel4.add(tfSurname, gridBagConstraints);
 
-        tfCatNR.setText("sdfg");
         tfCatNR.setEnabled(false);
         tfCatNR.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -241,7 +243,7 @@ public class MainGUI extends javax.swing.JFrame {
         btNewAdd.setEnabled(false);
         btNewAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btNewAddActionPerformed(evt);
+                onCreateStudent(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -251,7 +253,11 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel4.add(btNewAdd, gridBagConstraints);
 
         btCancel.setText("Cancel");
-        btCancel.setEnabled(false);
+        btCancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onCancel(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -259,6 +265,7 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel4.add(btCancel, gridBagConstraints);
 
         btFastBack.setText("<<");
+        btFastBack.setEnabled(false);
         btFastBack.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onFastPrevious(evt);
@@ -270,6 +277,7 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel4.add(btFastBack, gridBagConstraints);
 
         btBack.setText("<");
+        btBack.setEnabled(false);
         btBack.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onPrevious(evt);
@@ -281,6 +289,7 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel4.add(btBack, gridBagConstraints);
 
         btForward.setText(">");
+        btForward.setEnabled(false);
         btForward.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onNext(evt);
@@ -292,6 +301,7 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel4.add(btForward, gridBagConstraints);
 
         btFastForward.setText(">>");
+        btFastForward.setEnabled(false);
         btFastForward.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 onFastForward(evt);
@@ -342,8 +352,36 @@ public class MainGUI extends javax.swing.JFrame {
             }
             this.tfCatNR.setText(s.getCatno() + "");
             this.tfGrade.setText(s.getClassname());
-        } catch (IndexOutOfBoundsException e) {
+        } catch (IndexOutOfBoundsException | NullPointerException e) {
         }
+    }
+
+    private void reset() {
+        this.tfFirstname.setText("");
+        this.tfSurname.setText("");
+        this.tfBirthdate.setText("");
+        this.tfCatNR.setText("");
+        this.tfGrade.setText("");
+        this.cbGender.setSelectedIndex(0);
+
+        this.toggleInput();
+
+        this.btImport.setEnabled(false);
+        this.btCancel.setVisible(true);
+        this.btNewAdd.setText("Add");
+    }
+
+    private void toggleInput() {
+        this.tfFirstname.setEnabled(!this.cbGender.isEnabled());
+        this.tfSurname.setEnabled(!this.cbGender.isEnabled());
+        this.tfBirthdate.setEnabled(!this.cbGender.isEnabled());
+        this.tfGrade.setEnabled(!this.cbGender.isEnabled());
+        this.cbGender.setEnabled(!this.cbGender.isEnabled());
+        this.cbGrade.setEnabled(!this.cbGender.isEnabled());
+        this.btForward.setEnabled(!this.cbGender.isEnabled());
+        this.btBack.setEnabled(!this.cbGender.isEnabled());
+        this.btFastBack.setEnabled(!this.cbGender.isEnabled());
+        this.btFastForward.setEnabled(!this.cbGender.isEnabled());
     }
 
     private void updateClass() {
@@ -366,14 +404,59 @@ public class MainGUI extends javax.swing.JFrame {
                 this.connected = false;
             }
             this.btImport.setEnabled(this.connected);
+            this.btNewAdd.setEnabled(connected);
+            this.btForward.setEnabled(connected);
+            this.btBack.setEnabled(connected);
+            this.btFastBack.setEnabled(connected);
+            this.btFastForward.setEnabled(connected);
+            this.cbGrade.setEnabled(connected);
         } catch (SQLException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_onConnect
 
-    private void btNewAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btNewAddActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_btNewAddActionPerformed
+    private void onCreateStudent(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onCreateStudent
+        if (this.state == CreateState.NEW) {
+            this.reset();
+            this.state = CreateState.ADD;
+        } else {
+            try {
+                //TODO add student
+                String firstname = this.tfFirstname.getText();
+                String surname = this.tfSurname.getText();
+                LocalDate birthdate = LocalDate.parse(this.tfBirthdate.getText(), Student.DTF);
+                String grade = this.tfGrade.getText();
+                String gender = ((String) this.cbGender.getSelectedItem()).equals("Male") ? "m" : "w";
+
+                Student s = new Student(0, grade, 0, firstname, surname, gender, birthdate);
+                this.exec.insertStudent(s, classMappings);
+                this.currentStudents = this.students.get(this.currentClass);
+
+                if (this.students.containsKey(grade)) {
+                    List<Student> prev = this.students.get(grade);
+                    prev.add(s);
+                    this.exec.updateStudents(this.students.get(grade));
+                    this.currentClass = grade;
+                } else {
+                    this.students.put(grade, new ArrayList<Student>() {
+                        {
+                            add(s);
+                        }
+                    });
+                    this.exec.updateStudents(this.students.get(grade));
+                    this.currentClass = grade;
+                    this.cbGrade.addItem(grade);
+                    this.cbGrade.setSelectedItem(grade);
+                }
+
+                this.reset();
+                this.state = CreateState.NEW;
+                this.updateClass();
+            } catch (SQLException ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_onCreateStudent
 
     private void onFastPrevious(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onFastPrevious
         this.currentIndex = 0;
@@ -466,6 +549,14 @@ public class MainGUI extends javax.swing.JFrame {
         this.updateClass();
     }//GEN-LAST:event_onClassSelect
 
+    private void onCancel(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onCancel
+        this.toggleInput();
+        this.printStudent();
+        this.btCancel.setVisible(false);
+        this.btNewAdd.setText("New");
+        this.state = state.NEW;
+    }//GEN-LAST:event_onCancel
+
     /**
      * @param args the command line arguments
      */
@@ -532,4 +623,9 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JTextField tfGrade;
     private javax.swing.JTextField tfSurname;
     // End of variables declaration//GEN-END:variables
+}
+
+enum CreateState {
+    NEW,
+    ADD,
 }

@@ -60,7 +60,6 @@ public class DB_StatementExecutionHandler {
             while (set.next()) {
                 s.setStudentID(set.getInt("studentid"));
             }
-
         } else {
             //Class is not present --> Add it to the db & add the returned id to the mappings
             Grade g = new Grade(0, s.getClassname());
