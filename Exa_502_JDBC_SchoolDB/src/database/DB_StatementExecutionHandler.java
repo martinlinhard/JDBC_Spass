@@ -36,7 +36,8 @@ public class DB_StatementExecutionHandler {
 
     //Closes all statements + the connection
     public void disconnect() throws SQLException {
-        this.cache.closeAllStatements();
+        if (this.cache != null)
+            this.cache.closeAllStatements();
         this.conn.disconnect();
     }
 
@@ -128,5 +129,13 @@ public class DB_StatementExecutionHandler {
             return val;
         }
         return -1;
+    }
+    
+    public void clearTables() throws SQLException {
+        PreparedStatement p1 = this.cache.getStatementForAction(StatementType.CLEAR_STUDENT);
+        PreparedStatement p2 = this.cache.getStatementForAction(StatementType.CLEAR_GRADE);
+        
+        p1.executeUpdate();
+        p2.executeUpdate();
     }
 }

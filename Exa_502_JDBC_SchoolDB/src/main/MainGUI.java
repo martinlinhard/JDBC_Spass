@@ -1,9 +1,18 @@
 package main;
 
+import beans.Grade;
+import beans.Student;
 import database.DB_StatementExecutionHandler;
+import io.IOHandler;
+import java.io.FileNotFoundException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import utils.ThreadUtils;
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -19,12 +28,16 @@ public class MainGUI extends javax.swing.JFrame {
     private DB_StatementExecutionHandler exec;
     private boolean connected = false;
 
+    private Map<String, Integer> classMappings;
+    private HashMap<String, List<Student>> students;
+
     /**
      * Creates new form MainGUI
      */
     public MainGUI() throws ClassNotFoundException, SQLException {
         initComponents();
         this.exec = new DB_StatementExecutionHandler();
+        this.btCancel.setVisible(false);
     }
 
     /**
@@ -64,6 +77,8 @@ public class MainGUI extends javax.swing.JFrame {
         btBack = new javax.swing.JButton();
         btForward = new javax.swing.JButton();
         btFastForward = new javax.swing.JButton();
+        jLabel8 = new javax.swing.JLabel();
+        cbGender = new javax.swing.JComboBox<>();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -79,9 +94,20 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel1.add(btConnect);
 
         btImport.setText("Import");
+        btImport.setEnabled(false);
+        btImport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onImport(evt);
+            }
+        });
         jPanel1.add(btImport);
 
         btClose.setText("Close");
+        btClose.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onClose(evt);
+            }
+        });
         jPanel1.add(btClose);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_START);
@@ -98,7 +124,6 @@ public class MainGUI extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
         jPanel3.add(jLabel1, gridBagConstraints);
 
-        cbGrade.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "3DHIF" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -149,8 +174,6 @@ public class MainGUI extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         jPanel4.add(jLabel7, gridBagConstraints);
-
-        tfGrade.setText("jTextField1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
@@ -191,7 +214,7 @@ public class MainGUI extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel4.add(tfCatNR, gridBagConstraints);
 
-        btNewAdd.setText("New/Add");
+        btNewAdd.setText("New");
         btNewAdd.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btNewAddActionPerformed(evt);
@@ -199,13 +222,14 @@ public class MainGUI extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel4.add(btNewAdd, gridBagConstraints);
 
         btCancel.setText("Cancel");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel4.add(btCancel, gridBagConstraints);
 
@@ -217,26 +241,39 @@ public class MainGUI extends javax.swing.JFrame {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         jPanel4.add(btFastBack, gridBagConstraints);
 
         btBack.setText("<");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         jPanel4.add(btBack, gridBagConstraints);
 
         btForward.setText(">");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         jPanel4.add(btForward, gridBagConstraints);
 
         btFastForward.setText(">>");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 6;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         jPanel4.add(btFastForward, gridBagConstraints);
+
+        jLabel8.setText("Gender");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        jPanel4.add(jLabel8, gridBagConstraints);
+
+        cbGender.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Male", "Female" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        jPanel4.add(cbGender, gridBagConstraints);
 
         jPanel2.add(jPanel4, java.awt.BorderLayout.CENTER);
 
@@ -258,6 +295,7 @@ public class MainGUI extends javax.swing.JFrame {
                 this.btConnect.setText("Connect");
                 this.connected = false;
             }
+            this.btImport.setEnabled(this.connected);
         } catch (SQLException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -274,6 +312,56 @@ public class MainGUI extends javax.swing.JFrame {
     private void tfCatNRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tfCatNRActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_tfCatNRActionPerformed
+
+    private void onImport(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onImport
+        // To avoid blocking the gui
+        ThreadUtils.executeAsync(() -> {
+            try {
+                this.exec.clearTables();
+                //load students
+                List<Student> localStudents = IOHandler.load();
+
+                //parse grades
+                Set<Grade> grades = Student.getGradesForStudents(localStudents);
+
+                // ... and insert them into the db
+                for (Grade g : grades) {
+                    exec.insertGrade(g);
+                    this.cbGrade.addItem(g.getClassName());
+                }
+
+                //Generate mappings
+                this.classMappings = Grade.toClassMappings(grades);
+
+                //insert students
+                for (Student s : localStudents) {
+                    exec.insertStudent(s, this.classMappings);
+                }
+
+                //split the students into classes
+                this.students = Student.splitIntoClasses(localStudents);
+
+                for (List<Student> curr : this.students.values()) {
+                    // and update their catnos
+                    exec.updateStudents(curr);
+                }
+                
+                System.out.println("done");
+            } catch (FileNotFoundException | SQLException ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        });
+    }//GEN-LAST:event_onImport
+
+    private void onClose(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onClose
+        try {
+            this.exec.disconnect();
+            ThreadUtils.close();
+            System.exit(0);
+        } catch (SQLException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_onClose
 
     /**
      * @param args the command line arguments
@@ -303,13 +391,11 @@ public class MainGUI extends javax.swing.JFrame {
         //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    new MainGUI().setVisible(true);
-                } catch (ClassNotFoundException | SQLException ex) {
-                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-                }
+        java.awt.EventQueue.invokeLater(() -> {
+            try {
+                new MainGUI().setVisible(true);
+            } catch (ClassNotFoundException | SQLException ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
     }
@@ -324,6 +410,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JButton btForward;
     private javax.swing.JButton btImport;
     private javax.swing.JButton btNewAdd;
+    private javax.swing.JComboBox<String> cbGender;
     private javax.swing.JComboBox<String> cbGrade;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -332,6 +419,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

@@ -29,6 +29,7 @@ public class Test {
     public static void main(String[] args) throws SQLException, ClassNotFoundException, FileNotFoundException {
         DB_StatementExecutionHandler exec = new DB_StatementExecutionHandler();
         exec.connect();
+        
         //load students
         List<Student> students = IOHandler.load();
 

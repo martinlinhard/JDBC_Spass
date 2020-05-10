@@ -52,6 +52,9 @@ public class DB_StatementCache {
 
         //UPDATE films SET kind = 'Dramatic' WHERE kind = 'Drama';
         PreparedStatement updateID = this.dbConn.prepareStatement("UPDATE student SET catno = ? WHERE studentid = ?;");
+        
+        PreparedStatement clearGrade = this.dbConn.prepareStatement("DELETE FROM grade;");
+        PreparedStatement clearStudent = this.dbConn.prepareStatement("DELETE FROM student;");
 
         this.statements.put(StatementType.INSERT_STUDENT, insert);
         this.statements.put(StatementType.GET_STUDENTS, getS);
@@ -59,6 +62,8 @@ public class DB_StatementCache {
         this.statements.put(StatementType.INSERT_GRADE, insertG);
         this.statements.put(StatementType.UPDATE_CATNO, updateID);
         this.statements.put(StatementType.GET_STUDENTS_FOR_CLASS, getSForClass);
+        this.statements.put(StatementType.CLEAR_GRADE, clearGrade);
+        this.statements.put(StatementType.CLEAR_STUDENT, clearStudent);
     }
 
     public PreparedStatement getStatementForAction(StatementType type) {
@@ -81,4 +86,6 @@ enum StatementType {
     GET_STUDENTS,
     GET_STUDENTS_FOR_CLASS,
     GET_GRADES,
+    CLEAR_GRADE,
+    CLEAR_STUDENT,
 }
