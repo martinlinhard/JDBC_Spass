@@ -29,25 +29,31 @@ public class Test {
     public static void main(String[] args) throws SQLException, ClassNotFoundException, FileNotFoundException {
         DB_StatementExecutionHandler exec = new DB_StatementExecutionHandler();
         exec.connect();
+        //load students
         List<Student> students = IOHandler.load();
+
+        //load their grades
         Set<Grade> grades = Student.getGradesForStudents(students);
 
+        //insert their grades
         for (Grade g : grades) {
-            int val = exec.insertGrade(g);
-            g.setClassid(val);
+            exec.insertGrade(g);
         }
 
+        //generate mappings
         Map<String, Integer> mappings = Grade.toClassMappings(grades);
-        
-        Student s = new Student(0, "1DHIF", -5, "test", "test", "m", LocalDate.now());
-        Student s2 = new Student(0, "3DHIF", -5, "Alex", "Kirschner", "m", LocalDate.now());
-        
-        exec.insertStudent(s, mappings);
-        exec.insertStudent(s2, mappings);
-        
-        students = new ArrayList<>();
-        students.add(s);
-        students.add(s2);
-        exec.updateStudents(students);
+
+        //insert students
+        for (Student s : students) {
+            exec.insertStudent(s, mappings);
+        }
+
+        //split them into their respected classes
+        HashMap<String, List<Student>> split = Student.splitIntoClasses(students);
+
+        for (List<Student> curr : split.values()) {
+            // and update their catnos
+            exec.updateStudents(curr);
+        }
     }
 }

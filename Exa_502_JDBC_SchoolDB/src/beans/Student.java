@@ -11,6 +11,8 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -136,6 +138,28 @@ public class Student implements Comparable<Student> {
         return students.stream().map(s -> {
             return new Grade(0, s.getClassname());
         }).collect(Collectors.toSet());
+    }
+
+    public static HashMap<String, List<Student>> splitIntoClasses(List<Student> students) {
+        HashMap<String, List<Student>> values = new HashMap<>();
+
+        students.forEach((s) -> {
+            if (values.containsKey(s.getClassname())) {
+                //class already present --> just append student
+                List<Student> prev = values.get(s.getClassname());
+                prev.add(s);
+                Collections.sort(prev);
+            } else {
+                //class not yet present --> create a new entry
+                values.put(s.getClassname(), new ArrayList<Student>() {
+                    {
+                        add(s);
+                    }
+                });
+            }
+        });
+
+        return values;
     }
 
     @Override

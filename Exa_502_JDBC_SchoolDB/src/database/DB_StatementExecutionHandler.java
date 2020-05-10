@@ -12,7 +12,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,7 +51,7 @@ public class DB_StatementExecutionHandler {
             p.setString(4, s.getSurname());
             p.setString(5, s.getGender());
             p.setDate(6, Date.valueOf(s.getDateOfBirth()));
-            
+
             p.execute();
 
             // Update the id of the student, since it was assigned by the db
@@ -60,9 +59,9 @@ public class DB_StatementExecutionHandler {
             while (set.next()) {
                 s.setStudentID(set.getInt("studentid"));
             }
-            
+
         } else {
-            //Class is not present --> Add it
+            //Class is not present --> Add it to the db & add the returned id to the mappings
             Grade g = new Grade(0, s.getClassname());
             int newID = this.insertGrade(g);
             classMappings.put(g.getClassName(), newID);
@@ -99,8 +98,8 @@ public class DB_StatementExecutionHandler {
 
         return students;
     }
-    
-        public List<Student> getAllStudentsForClass(String classname) throws SQLException {
+
+    public List<Student> getAllStudentsForClass(String classname) throws SQLException {
         PreparedStatement p = this.cache.getStatementForAction(StatementType.GET_STUDENTS_FOR_CLASS);
         p.setString(1, classname);
 
@@ -110,7 +109,6 @@ public class DB_StatementExecutionHandler {
 
         return students;
     }
-
 
     public List<Grade> getAllGrades() throws SQLException {
         PreparedStatement p = this.cache.getStatementForAction(StatementType.GET_GRADES);
@@ -125,7 +123,9 @@ public class DB_StatementExecutionHandler {
         p.execute();
         ResultSet s = p.getResultSet();
         while (s.next()) {
-            return s.getInt("classid");
+            int val = s.getInt("classid");
+            g.setClassid(val);
+            return val;
         }
         return -1;
     }
