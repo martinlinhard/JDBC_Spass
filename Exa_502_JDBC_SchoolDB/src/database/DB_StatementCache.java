@@ -29,21 +29,40 @@ public class DB_StatementCache {
     }
 
     public void setup() throws SQLException {
-        PreparedStatement insert = this.dbConn.prepareStatement("INSERT INTO users(username, password) VALUES(?, ?);");
-        PreparedStatement delete = this.dbConn.prepareStatement("DELETE FROM users WHERE user_id = ?;");
+        PreparedStatement insert = this.dbConn.prepareStatement("INSERT INTO public.student(\n"
+                + "	classid, catno, firstname, surname, gender, dateofbirth)\n"
+                + "	VALUES (?, ?, ?, ?, ?, ?)\n"
+                + "     RETURNING studentid;");
+
+        PreparedStatement getS = this.dbConn.prepareStatement("SELECT studentid AS \"studentid\", g.classname AS \"classname\", catno AS \"catno\", firstname AS \"firstname\", surname AS \"surname\", gender AS \"gender\", birthdate AS \"dateofbirth\"\n"
+                + "FROM student\n"
+                + "INNER JOIN grade g ON s.classid = g.classid;");
+
+        PreparedStatement getG = this.dbConn.prepareStatement("SELECT * FROM grade;");
+
+        PreparedStatement insertG = this.dbConn.prepareStatement("INSERT INTO public.grade(\n"
+                + "	classname)\n"
+                + "	VALUES (?)"
+                + "     RETURNING classid;");
+        
+        PreparedStatement getSForClass = this.dbConn.prepareStatement("SELECT studentid AS \"studentid\", g.classname AS \"classname\", catno AS \"catno\", firstname AS \"firstname\", surname AS \"surname\", gender AS \"gender\", birthdate AS \"dateofbirth\"\n"
+                + "FROM student\n"
+                + "INNER JOIN grade g ON s.classid = g.classid\n"
+                + "WHERE g.classname = ?;");
+
+        //UPDATE films SET kind = 'Dramatic' WHERE kind = 'Drama';
+        PreparedStatement updateID = this.dbConn.prepareStatement("UPDATE student SET catno = ? WHERE studentid = ?;");
 
         this.statements.put(StatementType.INSERT_STUDENT, insert);
-        this.statements.put(StatementType.DELETE_STUDENT, delete);
+        this.statements.put(StatementType.GET_STUDENTS, getS);
+        this.statements.put(StatementType.GET_GRADES, getG);
+        this.statements.put(StatementType.INSERT_GRADE, insertG);
+        this.statements.put(StatementType.UPDATE_CATNO, updateID);
+        this.statements.put(StatementType.GET_STUDENTS_FOR_CLASS, getSForClass);
     }
 
     public PreparedStatement getStatementForAction(StatementType type) {
-        PreparedStatement p = this.statements.get(type);
-        this.statements.replace(type, null);
-        return p;
-    }
-
-    public void returnStatementForAction(StatementType type, PreparedStatement p) {
-        this.statements.replace(type, p);
+        return this.statements.get(type);
     }
 
     public void closeAllStatements() throws SQLException {
@@ -51,9 +70,15 @@ public class DB_StatementCache {
             p.close();
         }
     }
+
 }
 
 enum StatementType {
     INSERT_STUDENT,
+    INSERT_GRADE,
     DELETE_STUDENT,
+    UPDATE_CATNO,
+    GET_STUDENTS,
+    GET_STUDENTS_FOR_CLASS,
+    GET_GRADES,
 }

@@ -1,0 +1,154 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package beans;
+
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+/**
+ *
+ * @author martin
+ */
+public class Student implements Comparable<Student> {
+
+    private int studentID;
+    private String classname;
+    private int catno;
+    private String firstname;
+    private String surname;
+    private String gender;
+    private LocalDate dateOfBirth;
+
+    private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    public Student(int studentID, String classname, int catno, String firstname, String surname, String gender, LocalDate dateOfBirth) {
+        this.studentID = studentID;
+        this.classname = classname;
+        this.catno = catno;
+        this.firstname = firstname;
+        this.surname = surname;
+        this.gender = gender;
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public int getStudentID() {
+        return studentID;
+    }
+
+    public void setStudentID(int studentID) {
+        this.studentID = studentID;
+    }
+
+    public String getClassname() {
+        return classname;
+    }
+
+    public void setClassname(String classname) {
+        this.classname = classname;
+    }
+
+    public int getCatno() {
+        return catno;
+    }
+
+    public void setCatno(int catno) {
+        this.catno = catno;
+    }
+
+    public String getFirstname() {
+        return firstname;
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    public String getSurname() {
+        return surname;
+    }
+
+    public void setSurname(String surname) {
+        this.surname = surname;
+    }
+
+    public String getGender() {
+        return gender;
+    }
+
+    public void setGender(String gender) {
+        this.gender = gender;
+    }
+
+    public LocalDate getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    private static Student fromResultSet(ResultSet set) throws SQLException {
+        int studentID = set.getInt("studentid");
+        String classname = set.getString("classname");
+        int catno = set.getInt("catno");
+        String firstname = set.getString("firstname");
+        String surname = set.getString("surname");
+        String gender = set.getString("gender");
+        LocalDate birthDate = set.getDate("dateofbirth").toLocalDate();
+
+        return new Student(studentID, classname, catno, firstname, surname, gender, birthDate);
+    }
+
+    public static List<Student> parseFromResultSet(ResultSet set) throws SQLException {
+        List<Student> students = new ArrayList<>();
+        while (set.next()) {
+            students.add(Student.fromResultSet(set));
+        }
+        return students;
+    }
+
+    public static Student fromLine(String line) {
+        /*
+            Klasse;Familienname;Vorname;Geschlecht;Geburtsdatum
+            3AHIF;ADAM;Florian;m;2003-03-14
+            3AHIF;ALDRIAN;Dominik;m;2003-04-14
+            3AHIF;ANGERBAUER;Matthias;m;2002-12-19
+            3AHIF;EISLER;Theresa;w;2001-12-05
+            3AHIF;FINA;Marcel;m;2002-06-04
+            3AHIF;GOSCHIER;Annika;w;2003-02-05
+         */
+
+        String[] tokens = line.split(";");
+        return new Student(0, tokens[0], -1, tokens[2], tokens[1], tokens[3], LocalDate.parse(tokens[4], Student.DTF));
+    }
+
+    public static Set<Grade> getGradesForStudents(List<Student> students) {
+        return students.stream().map(s -> {
+            return new Grade(0, s.getClassname());
+        }).collect(Collectors.toSet());
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%d;%s;%s;%s;%s;%s", studentID, classname.toUpperCase(), surname.toUpperCase(), firstname, gender.charAt(0) + "", DTF.format(dateOfBirth));
+    }
+
+    @Override
+    public int compareTo(Student t) {
+        if (this.surname.equals(t.surname)) {
+            return this.firstname.compareTo(t.firstname);
+        } else {
+            return this.surname.compareTo(t.surname);
+        }
+    }
+}
