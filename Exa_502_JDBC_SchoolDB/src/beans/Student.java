@@ -28,18 +28,18 @@ public class Student implements Comparable<Student> {
     private String classname;
     private int catno;
     private String firstname;
-    private String surname;
+    private String lastname;
     private String gender;
     private LocalDate dateOfBirth;
 
     public static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
-    public Student(int studentID, String classname, int catno, String firstname, String surname, String gender, LocalDate dateOfBirth) {
+    public Student(int studentID, String classname, int catno, String firstname, String lastname, String gender, LocalDate dateOfBirth) {
         this.studentID = studentID;
         this.classname = classname;
         this.catno = catno;
         this.firstname = firstname;
-        this.surname = surname;
+        this.lastname = lastname;
         this.gender = gender;
         this.dateOfBirth = dateOfBirth;
     }
@@ -76,12 +76,12 @@ public class Student implements Comparable<Student> {
         this.firstname = firstname;
     }
 
-    public String getSurname() {
-        return surname;
+    public String getlastname() {
+        return lastname;
     }
 
-    public void setSurname(String surname) {
-        this.surname = surname;
+    public void setlastname(String lastname) {
+        this.lastname = lastname;
     }
 
     public String getGender() {
@@ -105,11 +105,11 @@ public class Student implements Comparable<Student> {
         String classname = set.getString("classname");
         int catno = set.getInt("catno");
         String firstname = set.getString("firstname");
-        String surname = set.getString("surname");
+        String lastname = set.getString("lastname");
         String gender = set.getString("gender");
         LocalDate birthDate = set.getDate("dateofbirth").toLocalDate();
 
-        return new Student(studentID, classname, catno, firstname, surname, gender, birthDate);
+        return new Student(studentID, classname, catno, firstname, lastname, gender, birthDate);
     }
 
     public static List<Student> parseFromResultSet(ResultSet set) throws SQLException {
@@ -173,20 +173,20 @@ public class Student implements Comparable<Student> {
 
     @Override
     public String toString() {
-        return String.format("%d;%s;%s;%s;%s;%s", studentID, classname.toUpperCase(), surname.toUpperCase(), firstname, gender.charAt(0) + "", DTF.format(dateOfBirth));
+        return String.format("%d;%s;%s;%s;%s;%s", studentID, classname.toUpperCase(), lastname.toUpperCase(), firstname, gender.charAt(0) + "", DTF.format(dateOfBirth));
     }
 
     public String toCSVString() {
         //Klasse;Familienname;Vorname;Geschlecht;Geburtsdatum
-        return String.format("%s;%s;%s;%s;%s", this.classname, this.surname, this.firstname, this.gender, Student.DTF.format(this.dateOfBirth));
+        return String.format("%s;%s;%s;%s;%s", this.classname, this.lastname, this.firstname, this.gender, Student.DTF.format(this.dateOfBirth));
     }
 
     @Override
     public int compareTo(Student t) {
-        if (this.surname.equals(t.surname)) {
+        if (this.lastname.equals(t.lastname)) {
             return this.firstname.compareToIgnoreCase(t.firstname);
         } else {
-            return this.surname.compareToIgnoreCase(t.surname);
+            return this.lastname.compareToIgnoreCase(t.lastname);
         }
     }
 }

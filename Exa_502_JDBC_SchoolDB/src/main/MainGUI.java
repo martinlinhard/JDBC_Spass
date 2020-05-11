@@ -82,7 +82,7 @@ public class MainGUI extends javax.swing.JFrame {
         tfGrade = new javax.swing.JTextField();
         tfFirstname = new javax.swing.JTextField();
         tfBirthdate = new javax.swing.JTextField();
-        tfSurname = new javax.swing.JTextField();
+        tflastname = new javax.swing.JTextField();
         tfCatNR = new javax.swing.JTextField();
         btNewAdd = new javax.swing.JButton();
         btCancel = new javax.swing.JButton();
@@ -197,7 +197,7 @@ public class MainGUI extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         jPanel4.add(jLabel5, gridBagConstraints);
 
-        jLabel7.setText("Surname");
+        jLabel7.setText("lastname");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -231,14 +231,14 @@ public class MainGUI extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         jPanel4.add(tfBirthdate, gridBagConstraints);
 
-        tfSurname.setEnabled(false);
+        tflastname.setEnabled(false);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        jPanel4.add(tfSurname, gridBagConstraints);
+        jPanel4.add(tflastname, gridBagConstraints);
 
         tfCatNR.setEnabled(false);
         tfCatNR.addActionListener(new java.awt.event.ActionListener() {
@@ -357,7 +357,7 @@ public class MainGUI extends javax.swing.JFrame {
             Student s = this.currentStudents.get(this.currentIndex);
 
             this.tfFirstname.setText(s.getFirstname());
-            this.tfSurname.setText(s.getSurname());
+            this.tflastname.setText(s.getlastname());
             this.tfBirthdate.setText(Student.DTF.format(s.getDateOfBirth()));
             if (s.getGender().equals("m")) {
                 this.cbGender.setSelectedIndex(0);
@@ -372,7 +372,7 @@ public class MainGUI extends javax.swing.JFrame {
 
     private void reset() {
         this.tfFirstname.setText("");
-        this.tfSurname.setText("");
+        this.tflastname.setText("");
         this.tfBirthdate.setText("");
         this.tfCatNR.setText("");
         this.tfGrade.setText("");
@@ -386,7 +386,7 @@ public class MainGUI extends javax.swing.JFrame {
 
     private void toggleInput() {
         this.tfFirstname.setEnabled(!this.tfFirstname.isEnabled());
-        this.tfSurname.setEnabled(!this.tfSurname.isEnabled());
+        this.tflastname.setEnabled(!this.tflastname.isEnabled());
         this.tfBirthdate.setEnabled(!this.tfBirthdate.isEnabled());
         this.tfGrade.setEnabled(!this.tfGrade.isEnabled());
         this.cbGender.setEnabled(!this.cbGender.isEnabled());
@@ -441,12 +441,12 @@ public class MainGUI extends javax.swing.JFrame {
                 try {
                     //add student
                     String firstname = this.tfFirstname.getText();
-                    String surname = this.tfSurname.getText();
+                    String lastname = this.tflastname.getText();
                     LocalDate birthdate = LocalDate.parse(this.tfBirthdate.getText(), Student.DTF);
                     String grade = this.tfGrade.getText();
                     String gender = ((String) this.cbGender.getSelectedItem()).equals("Male") ? "m" : "w";
 
-                    Student s = new Student(0, grade, 0, firstname, surname, gender, birthdate);
+                    Student s = new Student(0, grade, 0, firstname, lastname, gender, birthdate);
                     this.exec.insertStudent(s, classMappings);
                     this.currentStudents = this.students.get(this.currentClass);
 
@@ -652,7 +652,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JTextField tfCatNR;
     private javax.swing.JTextField tfFirstname;
     private javax.swing.JTextField tfGrade;
-    private javax.swing.JTextField tfSurname;
+    private javax.swing.JTextField tflastname;
     // End of variables declaration//GEN-END:variables
 }
 

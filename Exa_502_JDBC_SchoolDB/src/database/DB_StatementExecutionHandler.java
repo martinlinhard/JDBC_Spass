@@ -49,7 +49,7 @@ public class DB_StatementExecutionHandler {
             p.setInt(1, classMappings.get(s.getClassname()));
             p.setInt(2, 0);
             p.setString(3, s.getFirstname());
-            p.setString(4, s.getSurname());
+            p.setString(4, s.getlastname());
             p.setString(5, s.getGender());
             p.setDate(6, Date.valueOf(s.getDateOfBirth()));
 

@@ -30,11 +30,11 @@ public class DB_StatementCache {
 
     public void setup() throws SQLException {
         PreparedStatement insert = this.dbConn.prepareStatement("INSERT INTO public.student(\n"
-                + "	classid, catno, firstname, surname, gender, dateofbirth)\n"
+                + "	classid, catno, firstname, lastname, gender, dateofbirth)\n"
                 + "	VALUES (?, ?, ?, ?, ?, ?)\n"
                 + "     RETURNING studentid;");
 
-        PreparedStatement getS = this.dbConn.prepareStatement("SELECT studentid AS \"studentid\", g.classname AS \"classname\", catno AS \"catno\", firstname AS \"firstname\", surname AS \"surname\", gender AS \"gender\", dateofbirth AS \"dateofbirth\"\n"
+        PreparedStatement getS = this.dbConn.prepareStatement("SELECT studentid AS \"studentid\", g.classname AS \"classname\", catno AS \"catno\", firstname AS \"firstname\", lastname AS \"lastname\", gender AS \"gender\", dateofbirth AS \"dateofbirth\"\n"
                 + "FROM student s\n"
                 + "INNER JOIN grade g ON s.classid = g.classid;");
 
@@ -45,7 +45,7 @@ public class DB_StatementCache {
                 + "	VALUES (?)"
                 + "     RETURNING classid;");
         
-        PreparedStatement getSForClass = this.dbConn.prepareStatement("SELECT studentid AS \"studentid\", g.classname AS \"classname\", catno AS \"catno\", firstname AS \"firstname\", surname AS \"surname\", gender AS \"gender\", birthdate AS \"dateofbirth\"\n"
+        PreparedStatement getSForClass = this.dbConn.prepareStatement("SELECT studentid AS \"studentid\", g.classname AS \"classname\", catno AS \"catno\", firstname AS \"firstname\", lastname AS \"lastname\", gender AS \"gender\", birthdate AS \"dateofbirth\"\n"
                 + "FROM student\n"
                 + "INNER JOIN grade g ON s.classid = g.classid\n"
                 + "WHERE g.classname = ?;");
