@@ -94,7 +94,6 @@ public class DB_StatementExecutionHandler {
 
         ResultSet s = p.executeQuery();
         List<Student> students = Student.parseFromResultSet(s);
-        Collections.sort(students);
 
         return students;
     }
@@ -105,7 +104,6 @@ public class DB_StatementExecutionHandler {
 
         ResultSet s = p.executeQuery();
         List<Student> students = Student.parseFromResultSet(s);
-        Collections.sort(students);
 
         return students;
     }
