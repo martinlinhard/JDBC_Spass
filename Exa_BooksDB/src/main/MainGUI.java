@@ -5,23 +5,80 @@
  */
 package main;
 
+import beans.Book;
+import beans.Genre;
+import beans.MergeResult;
+import beans.SearchState;
 import bl.BookListModel;
+import db.DB_Access;
+import java.io.FileNotFoundException;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import utils.MergeHelper;
 
 /**
  *
  * @author martin
  */
 public class MainGUI extends javax.swing.JFrame {
-    
+
     private BookListModel blm;
-    
+
+    private List<Book> allBooks;
+    private Set<Genre> allGenres;
+    private Set<String> allPublishers;
+
+    private DB_Access dba;
+
+    private SearchState currentSearchState = SearchState.BOOK;
+
+    private String authorSearchText = "";
+    private String bookSearchText = "";
+
     /**
      * Creates new form MainGUI
+     *
+     * @throws java.sql.SQLException
+     * @throws java.lang.ClassNotFoundException
+     * @throws java.io.FileNotFoundException
      */
-    public MainGUI() {
+    public MainGUI() throws SQLException, ClassNotFoundException, FileNotFoundException {
         initComponents();
         this.blm = new BookListModel();
         this.bookList.setModel(this.blm);
+
+        this.init();
+    }
+
+    private void init() throws SQLException, ClassNotFoundException, FileNotFoundException {
+        this.dba = new DB_Access();
+
+        this.updateFilters("", "", "", "", "");
+
+        this.initGenres();
+        this.initPublishers();
+    }
+
+    private void initGenres() {
+        this.allGenres.stream().map(Genre::getName).forEach(this.cbGenre::addItem);
+    }
+
+    private void initPublishers() {
+        this.allPublishers.stream().forEach(this.cbPublishers::addItem);
+    }
+
+    private void updateFilters(String firstname, String lastname, String title, String genre, String publisher) throws SQLException {
+        List<Book> books = this.dba.getBooksForCriteria(firstname, lastname, title, genre, publisher);
+        MergeResult mergeBooks = MergeHelper.mergeBooks(books);
+
+        this.allBooks = mergeBooks.getAllBooks();
+        this.allGenres = mergeBooks.getAllGenres();
+        this.allPublishers = mergeBooks.getAllPublishers();
+
+        this.blm.setAllBooks(allBooks);
     }
 
     /**
@@ -38,10 +95,10 @@ public class MainGUI extends javax.swing.JFrame {
         jEditorPane1 = new javax.swing.JEditorPane();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox<>();
-        jTextField1 = new javax.swing.JTextField();
+        cbPublishers = new javax.swing.JComboBox<>();
+        tfSearchText = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        jComboBox2 = new javax.swing.JComboBox<>();
+        cbGenre = new javax.swing.JComboBox<>();
         jPanel5 = new javax.swing.JPanel();
         jRadioButton1 = new javax.swing.JRadioButton();
         jRadioButton2 = new javax.swing.JRadioButton();
@@ -50,6 +107,8 @@ public class MainGUI extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         bookList = new javax.swing.JList<>();
         jPanel4 = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        htmlOutput = new javax.swing.JEditorPane();
 
         jScrollPane2.setViewportView(jEditorPane1);
 
@@ -61,29 +120,39 @@ public class MainGUI extends javax.swing.JFrame {
         jLabel1.setText("Verlag");
         jPanel1.add(jLabel1);
 
-        jPanel1.add(jComboBox1);
+        jPanel1.add(cbPublishers);
 
-        jTextField1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jTextField1ActionPerformed(evt);
+        tfSearchText.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                onFilterTextChanged(evt);
             }
         });
-        jPanel1.add(jTextField1);
+        jPanel1.add(tfSearchText);
 
         jLabel2.setText("Genre");
         jPanel1.add(jLabel2);
 
-        jPanel1.add(jComboBox2);
+        jPanel1.add(cbGenre);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
         jRadioButton1.setText("Buch");
+        jRadioButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onBtBookPress(evt);
+            }
+        });
         jPanel5.add(jRadioButton1, new java.awt.GridBagConstraints());
 
         buttonGroup1.add(jRadioButton2);
         jRadioButton2.setText("Autor");
+        jRadioButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onBtAuthorPress(evt);
+            }
+        });
         jPanel5.add(jRadioButton2, new java.awt.GridBagConstraints());
 
         jPanel1.add(jPanel5);
@@ -95,6 +164,11 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Bücher"));
         jPanel3.setLayout(new java.awt.BorderLayout());
 
+        bookList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
+                onBookSelected(evt);
+            }
+        });
         jScrollPane1.setViewportView(bookList);
 
         jPanel3.add(jScrollPane1, java.awt.BorderLayout.CENTER);
@@ -103,6 +177,12 @@ public class MainGUI extends javax.swing.JFrame {
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Buchdetails"));
         jPanel4.setLayout(new java.awt.BorderLayout());
+
+        htmlOutput.setContentType("text/html"); // NOI18N
+        jScrollPane3.setViewportView(htmlOutput);
+
+        jPanel4.add(jScrollPane3, java.awt.BorderLayout.CENTER);
+
         jPanel2.add(jPanel4);
 
         getContentPane().add(jPanel2, java.awt.BorderLayout.CENTER);
@@ -110,9 +190,46 @@ public class MainGUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    private void onBtBookPress(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onBtBookPress
+        this.currentSearchState = SearchState.BOOK;
+        this.tfSearchText.setText(bookSearchText);
+    }//GEN-LAST:event_onBtBookPress
+
+    private void onBtAuthorPress(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onBtAuthorPress
+        this.currentSearchState = SearchState.AUTHOR;
+        this.tfSearchText.setText(authorSearchText);
+    }//GEN-LAST:event_onBtAuthorPress
+
+    private void onFilterTextChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_onFilterTextChanged
+        try {
+            if (this.currentSearchState == SearchState.BOOK) {
+                // change book
+                this.bookSearchText = this.tfSearchText.getText().trim();
+            } else {
+                // change author
+                this.authorSearchText = this.tfSearchText.getText().trim();
+            }
+
+            System.out.println(this.authorSearchText);
+            System.out.println(this.bookSearchText);
+
+            // update gui
+            this.updateFilters(
+                    this.authorSearchText, this.authorSearchText,
+                    this.bookSearchText,
+                    //(String)this.cbGenre.getSelectedItem(),
+                    //(String) this.cbPublishers.getSelectedItem()
+                    "", ""
+            );
+        } catch (SQLException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_onFilterTextChanged
+
+    private void onBookSelected(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_onBookSelected
+        Book b = this.bookList.getSelectedValue();
+        this.htmlOutput.setText(b.renderToHTMLString());
+    }//GEN-LAST:event_onBookSelected
 
     /**
      * @param args the command line arguments
@@ -144,16 +261,21 @@ public class MainGUI extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new MainGUI().setVisible(true);
+                try {
+                    new MainGUI().setVisible(true);
+                } catch (SQLException | ClassNotFoundException | FileNotFoundException ex) {
+                    Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JList<String> bookList;
+    private javax.swing.JList<Book> bookList;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JComboBox<String> jComboBox1;
-    private javax.swing.JComboBox<String> jComboBox2;
+    private javax.swing.JComboBox<String> cbGenre;
+    private javax.swing.JComboBox<String> cbPublishers;
+    private javax.swing.JEditorPane htmlOutput;
     private javax.swing.JEditorPane jEditorPane1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -166,6 +288,7 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTextField jTextField1;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JTextField tfSearchText;
     // End of variables declaration//GEN-END:variables
 }

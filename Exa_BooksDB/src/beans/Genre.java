@@ -5,21 +5,18 @@
  */
 package beans;
 
+import java.util.Objects;
+
 /**
  *
  * @author martin
  */
 public class Genre {
 
-    private int genreID;
     private String name;
 
     public Genre(String name) {
         this.name = name;
-    }
-
-    public int getGenreID() {
-        return genreID;
     }
 
     public String getName() {
@@ -33,7 +30,7 @@ public class Genre {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 17 * hash + this.genreID;
+        hash = 89 * hash + Objects.hashCode(this.name);
         return hash;
     }
 
@@ -49,9 +46,11 @@ public class Genre {
             return false;
         }
         final Genre other = (Genre) obj;
-        if (this.genreID != other.genreID) {
+        if (!Objects.equals(this.name, other.name)) {
             return false;
         }
         return true;
     }
+    
+    
 }

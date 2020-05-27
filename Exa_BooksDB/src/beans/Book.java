@@ -5,16 +5,22 @@
  */
 package beans;
 
+import io.IOHandler;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author martin
  */
 public class Book {
+
+    private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     private int bookID;
     private String title;
@@ -24,8 +30,9 @@ public class Book {
     private int pages;
     private float rating;
     private List<Genre> genre;
+    private LocalDate published;
 
-    public Book(int bookID, String title, String isbnNr, List<Author> authors, String publisher, int pages, float rating, List<Genre> genre) {
+    public Book(int bookID, String title, String isbnNr, List<Author> authors, String publisher, int pages, float rating, List<Genre> genre, LocalDate published) {
         this.bookID = bookID;
         this.title = title;
         this.isbnNr = isbnNr;
@@ -34,6 +41,11 @@ public class Book {
         this.pages = pages;
         this.rating = rating;
         this.genre = genre;
+        this.published = published;
+    }
+
+    public int getBookID() {
+        return bookID;
     }
 
     public Book(ResultSet set) throws SQLException {
@@ -50,7 +62,8 @@ public class Book {
             {
                 add(new Genre(set.getString("genre")));
             }
-        });
+        },
+                set.getDate("published_date").toLocalDate());
     }
 
     @Override
@@ -58,16 +71,20 @@ public class Book {
         return this.title;
     }
 
+    public String renderToHTMLString() {
+        return IOHandler.bookTemplate
+                .replace("{ISBN}", this.isbnNr)
+                .replace("{PAGES}", this.pages + "")
+                .replace("{GENRE}", this.genre.stream().map(Genre::getName).collect(Collectors.joining(", ")))
+                .replace("{RATING}", String.format("%.2f", this.rating))
+                .replace("{PUBLISHED_ON}", DTF.format(this.published))
+                .replace("{PUBLISHER}", this.publisher)
+                .replace("{TITLE}", this.title)
+                .replace("{AUTHOR}", this.authors.stream().map(a -> a.getLastname() + ", " + a.getFirstname()).collect(Collectors.joining("<br>")));
+    }
+
     @Override
     public int hashCode() {
-
-        ArrayList<String> gfg = new ArrayList<String>() {
-            {
-                add("Geeks");
-                add("for");
-                add("Geeks");
-            }
-        };
         int hash = 7;
         hash = 83 * hash + this.bookID;
         return hash;
@@ -90,4 +107,61 @@ public class Book {
         }
         return true;
     }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getIsbnNr() {
+        return isbnNr;
+    }
+
+    public void setIsbnNr(String isbnNr) {
+        this.isbnNr = isbnNr;
+    }
+
+    public List<Author> getAuthors() {
+        return authors;
+    }
+
+    public void setAuthors(List<Author> authors) {
+        this.authors = authors;
+    }
+
+    public String getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(String publisher) {
+        this.publisher = publisher;
+    }
+
+    public int getPages() {
+        return pages;
+    }
+
+    public void setPages(int pages) {
+        this.pages = pages;
+    }
+
+    public float getRating() {
+        return rating;
+    }
+
+    public void setRating(float rating) {
+        this.rating = rating;
+    }
+
+    public List<Genre> getGenre() {
+        return genre;
+    }
+
+    public void setGenre(List<Genre> genre) {
+        this.genre = genre;
+    }
+
 }

@@ -26,7 +26,7 @@ public class DB_CachedConnection {
     }
 
     public void setup() throws SQLException, FileNotFoundException {
-        this.bookStatement = this.dbConn.prepareStatement(IOHandler.getStatement());
+        this.bookStatement = this.dbConn.prepareStatement(IOHandler.bookStatementS);
     }
 
     public void closeAllStatements() throws SQLException {

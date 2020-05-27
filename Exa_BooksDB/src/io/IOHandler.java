@@ -10,6 +10,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 /**
@@ -24,8 +26,20 @@ public class IOHandler {
      * statement)
      * @throws FileNotFoundException
      */
-    public static String getStatement() throws FileNotFoundException {
-        Path p = Paths.get(System.getProperty("user.dir"), "src", "res", "book_query.sql");
+    public static String bookStatementS;
+    public static String bookTemplate;
+
+    static {
+        try {
+            bookStatementS = IOHandler.getString(Paths.get(System.getProperty("user.dir"), "src", "res", "book_query.sql"));
+            bookTemplate = IOHandler.getString(Paths.get(System.getProperty("user.dir"), "src", "res", "book_template.html"));
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(IOHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    public static String getString(Path p) throws FileNotFoundException {
         return new BufferedReader(new FileReader(p.toFile())).lines().collect(Collectors.joining("\n"));
     }
 }
