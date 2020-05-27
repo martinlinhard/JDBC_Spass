@@ -5,11 +5,11 @@
  */
 package db;
 
-import beans.StatementType;
+import io.IOHandler;
+import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashMap;
 
 /**
  *
@@ -17,27 +17,23 @@ import java.util.HashMap;
  */
 public class DB_CachedConnection {
 
-    private HashMap<StatementType, PreparedStatement> statements;
+    private PreparedStatement bookStatement;
 
     private Connection dbConn;
 
     public DB_CachedConnection(Connection dbConn) throws SQLException {
         this.dbConn = dbConn;
-        this.statements = new HashMap<>();
     }
 
-    public void setup() throws SQLException {
-        // TODO add all statements to the hashmap
-    }
-
-    public PreparedStatement getStatementForAction(StatementType type) {
-        return this.statements.get(type);
+    public void setup() throws SQLException, FileNotFoundException {
+        this.bookStatement = this.dbConn.prepareStatement(IOHandler.getStatement());
     }
 
     public void closeAllStatements() throws SQLException {
-        for (PreparedStatement p : this.statements.values()) {
-            p.close();
-        }
+        this.bookStatement.close();
     }
 
+    public PreparedStatement getBookStatement() {
+        return bookStatement;
+    }
 }

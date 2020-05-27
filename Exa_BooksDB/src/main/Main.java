@@ -5,12 +5,21 @@
  */
 package main;
 
+import beans.Book;
+import db.DB_Access;
+import java.io.FileNotFoundException;
+import java.sql.SQLException;
+import java.util.List;
+
 /**
  *
  * @author martin
  */
 public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello world 12");
+
+    public static void main(String[] args) throws SQLException, ClassNotFoundException, FileNotFoundException {
+        DB_Access acc = new DB_Access();
+        List<Book> books = acc.getBooksForCriteria("", "", "", "", "");
+        System.out.println("Size is: " + books.size());
     }
 }

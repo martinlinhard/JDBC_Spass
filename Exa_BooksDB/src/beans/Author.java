@@ -16,6 +16,12 @@ public class Author {
     private String middlename;
     private String lastname;
 
+    public Author(String firstname, String middlename, String lastname) {
+        this.firstname = firstname;
+        this.middlename = middlename;
+        this.lastname = lastname;
+    }
+
     public int getAuthorID() {
         return authorID;
     }

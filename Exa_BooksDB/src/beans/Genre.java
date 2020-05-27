@@ -14,6 +14,10 @@ public class Genre {
     private int genreID;
     private String name;
 
+    public Genre(String name) {
+        this.name = name;
+    }
+
     public int getGenreID() {
         return genreID;
     }

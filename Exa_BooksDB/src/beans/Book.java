@@ -5,6 +5,9 @@
  */
 package beans;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,6 +36,23 @@ public class Book {
         this.genre = genre;
     }
 
+    public Book(ResultSet set) throws SQLException {
+        this(set.getInt("ID"), set.getString("title"), set.getString("ISBN"),
+                new ArrayList<Author>() {
+            {
+                add(new Author(set.getString("firstname"), set.getString("middlename"), set.getString("lastname")));
+            }
+        },
+                set.getString("publisher_name"),
+                set.getInt("pages"),
+                set.getFloat("rating"),
+                new ArrayList<Genre>() {
+            {
+                add(new Genre(set.getString("genre")));
+            }
+        });
+    }
+
     @Override
     public String toString() {
         return this.title;
@@ -40,6 +60,14 @@ public class Book {
 
     @Override
     public int hashCode() {
+
+        ArrayList<String> gfg = new ArrayList<String>() {
+            {
+                add("Geeks");
+                add("for");
+                add("Geeks");
+            }
+        };
         int hash = 7;
         hash = 83 * hash + this.bookID;
         return hash;
