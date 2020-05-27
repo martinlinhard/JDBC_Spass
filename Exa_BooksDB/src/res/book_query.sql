@@ -1,4 +1,4 @@
-SELECT  all_books_of_author.book_id AS "ID",
+SELECT          all_books_of_author.book_id AS "ID",
 		all_books_of_author.title AS "title",
 		all_books_of_author.total_pages AS "pages",
 		all_books_of_author.rating AS "rating",

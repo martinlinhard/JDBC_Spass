@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 /**
@@ -27,8 +28,8 @@ public class MergeHelper {
         Collection<List<Book>> merged = books.stream().collect(Collectors.groupingBy(Book::getBookID)).values();
 
         List<Book> newBooks = new ArrayList<>();
-        Set<Genre> allGenres = new HashSet<>();
-        Set<String> allPublishers = new HashSet<>();
+        Set<Genre> allGenres = new TreeSet<>();
+        Set<String> allPublishers = new TreeSet<>();
 
         merged.forEach(bl -> {
             Set<Author> authors = new HashSet<>();
@@ -44,7 +45,7 @@ public class MergeHelper {
             b.setGenre(new ArrayList<>(genres));
             newBooks.add(b);
         });
-
+        
         return new MergeResult(newBooks, allGenres, allPublishers);
     }
 }

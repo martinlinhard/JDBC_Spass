@@ -11,7 +11,7 @@ import java.util.Objects;
  *
  * @author martin
  */
-public class Genre {
+public class Genre implements Comparable<Genre> {
 
     private String name;
 
@@ -51,6 +51,9 @@ public class Genre {
         }
         return true;
     }
-    
-    
+
+    @Override
+    public int compareTo(Genre t) {
+        return this.name.compareToIgnoreCase(t.name);
+    }
 }

@@ -38,6 +38,9 @@ public class MainGUI extends javax.swing.JFrame {
     private String authorSearchText = "";
     private String bookSearchText = "";
 
+    private String currentGenre = "";
+    private String currentPublisher = "";
+
     /**
      * Creates new form MainGUI
      *
@@ -63,10 +66,12 @@ public class MainGUI extends javax.swing.JFrame {
     }
 
     private void initGenres() {
+        this.allGenres.add(new Genre("Genres"));
         this.allGenres.stream().map(Genre::getName).forEach(this.cbGenre::addItem);
     }
 
     private void initPublishers() {
+        this.allPublishers.add("Publishers");
         this.allPublishers.stream().forEach(this.cbPublishers::addItem);
     }
 
@@ -77,6 +82,8 @@ public class MainGUI extends javax.swing.JFrame {
         this.allBooks = mergeBooks.getAllBooks();
         this.allGenres = mergeBooks.getAllGenres();
         this.allPublishers = mergeBooks.getAllPublishers();
+
+        System.out.println("the size is: " + this.allPublishers.size());
 
         this.blm.setAllBooks(allBooks);
     }
@@ -120,6 +127,11 @@ public class MainGUI extends javax.swing.JFrame {
         jLabel1.setText("Verlag");
         jPanel1.add(jLabel1);
 
+        cbPublishers.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onPublisherSelected(evt);
+            }
+        });
         jPanel1.add(cbPublishers);
 
         tfSearchText.addKeyListener(new java.awt.event.KeyAdapter() {
@@ -132,6 +144,11 @@ public class MainGUI extends javax.swing.JFrame {
         jLabel2.setText("Genre");
         jPanel1.add(jLabel2);
 
+        cbGenre.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onGenreSelected(evt);
+            }
+        });
         jPanel1.add(cbGenre);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
@@ -210,16 +227,11 @@ public class MainGUI extends javax.swing.JFrame {
                 this.authorSearchText = this.tfSearchText.getText().trim();
             }
 
-            System.out.println(this.authorSearchText);
-            System.out.println(this.bookSearchText);
-
             // update gui
             this.updateFilters(
                     this.authorSearchText, this.authorSearchText,
                     this.bookSearchText,
-                    //(String)this.cbGenre.getSelectedItem(),
-                    //(String) this.cbPublishers.getSelectedItem()
-                    "", ""
+                    this.currentGenre, this.currentPublisher
             );
         } catch (SQLException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
@@ -230,6 +242,38 @@ public class MainGUI extends javax.swing.JFrame {
         Book b = this.bookList.getSelectedValue();
         this.htmlOutput.setText(b.renderToHTMLString());
     }//GEN-LAST:event_onBookSelected
+
+    private void onPublisherSelected(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onPublisherSelected
+        try {
+            String selected = (String) this.cbPublishers.getSelectedItem();
+            if (selected != null) {
+                this.currentPublisher = selected.equals("Publishers") ? "" : selected;
+            }
+            this.updateFilters(
+                    this.authorSearchText, this.authorSearchText,
+                    this.bookSearchText,
+                    this.currentGenre, this.currentPublisher
+            );
+        } catch (SQLException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_onPublisherSelected
+
+    private void onGenreSelected(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onGenreSelected
+        try {
+        String selected = (String) this.cbGenre.getSelectedItem();
+        if (selected != null) {
+            this.currentGenre = selected.equals("Genres") ? "" : selected;
+        }
+        this.updateFilters(
+                    this.authorSearchText, this.authorSearchText,
+                    this.bookSearchText,
+                    this.currentGenre, this.currentPublisher
+            );
+        } catch (SQLException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_onGenreSelected
 
     /**
      * @param args the command line arguments

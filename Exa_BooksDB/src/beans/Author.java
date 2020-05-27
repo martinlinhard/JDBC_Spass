@@ -79,6 +79,5 @@ public class Author {
         }
         return true;
     }
-    
-    
+
 }

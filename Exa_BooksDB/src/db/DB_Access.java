@@ -42,8 +42,6 @@ public class DB_Access {
             p.setString(i + 1, "%" + values[i] + "%");
         }
 
-        System.out.println(p.toString());
-
         List<Book> books = new ArrayList<>();
 
         ResultSet set = p.executeQuery();
