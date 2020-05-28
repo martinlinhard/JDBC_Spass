@@ -25,4 +25,5 @@ INNER JOIN authors a ON ba.author_id = a.author_id
 
 WHERE UPPER(all_books_of_author.title) LIKE UPPER(?) AND
 UPPER(g.genre) LIKE UPPER(?) AND
-UPPER(p.name) LIKE UPPER(?);
+UPPER(p.name) LIKE UPPER(?)
+ORDER BY all_books_of_author.title;

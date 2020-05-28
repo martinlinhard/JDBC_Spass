@@ -41,6 +41,8 @@ public class MainGUI extends javax.swing.JFrame {
     private String currentGenre = "";
     private String currentPublisher = "";
 
+    private boolean go = false;
+
     /**
      * Creates new form MainGUI
      *
@@ -59,33 +61,36 @@ public class MainGUI extends javax.swing.JFrame {
     private void init() throws SQLException, ClassNotFoundException, FileNotFoundException {
         this.dba = new DB_Access();
 
-        this.updateFilters("", "", "", "", "");
+        MergeResult mergeBooks = this.updateFilters("", "", "", "", "");
+        this.allGenres = mergeBooks.getAllGenres();
+        this.allPublishers = mergeBooks.getAllPublishers();
 
         this.initGenres();
         this.initPublishers();
+
+        this.go = true;
     }
 
     private void initGenres() {
-        this.allGenres.add(new Genre("Genres"));
         this.allGenres.stream().map(Genre::getName).forEach(this.cbGenre::addItem);
+        this.cbGenre.insertItemAt("Alle", 0);
+        this.cbGenre.setSelectedIndex(0);
     }
 
     private void initPublishers() {
-        this.allPublishers.add("Publishers");
         this.allPublishers.stream().forEach(this.cbPublishers::addItem);
+        this.cbPublishers.insertItemAt("Alle", 0);
+        this.cbPublishers.setSelectedIndex(0);
     }
 
-    private void updateFilters(String firstname, String lastname, String title, String genre, String publisher) throws SQLException {
+    private MergeResult updateFilters(String firstname, String lastname, String title, String genre, String publisher) throws SQLException {
         List<Book> books = this.dba.getBooksForCriteria(firstname, lastname, title, genre, publisher);
         MergeResult mergeBooks = MergeHelper.mergeBooks(books);
 
         this.allBooks = mergeBooks.getAllBooks();
-        this.allGenres = mergeBooks.getAllGenres();
-        this.allPublishers = mergeBooks.getAllPublishers();
-
-        System.out.println("the size is: " + this.allPublishers.size());
 
         this.blm.setAllBooks(allBooks);
+        return mergeBooks;
     }
 
     /**
@@ -244,35 +249,42 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_onBookSelected
 
     private void onPublisherSelected(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onPublisherSelected
-        try {
-            String selected = (String) this.cbPublishers.getSelectedItem();
-            if (selected != null) {
-                this.currentPublisher = selected.equals("Publishers") ? "" : selected;
+
+        if (go) {
+            try {
+                String selected = (String) this.cbPublishers.getSelectedItem();
+                if (selected != null) {
+                    this.currentPublisher = selected.equals("Alle") ? "" : selected;
+                }
+                this.updateFilters(
+                        this.authorSearchText, this.authorSearchText,
+                        this.bookSearchText,
+                        this.currentGenre, this.currentPublisher
+                );
+            } catch (SQLException ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
-            this.updateFilters(
-                    this.authorSearchText, this.authorSearchText,
-                    this.bookSearchText,
-                    this.currentGenre, this.currentPublisher
-            );
-        } catch (SQLException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
+
     }//GEN-LAST:event_onPublisherSelected
 
     private void onGenreSelected(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onGenreSelected
-        try {
-        String selected = (String) this.cbGenre.getSelectedItem();
-        if (selected != null) {
-            this.currentGenre = selected.equals("Genres") ? "" : selected;
+        if (go) {
+            try {
+                String selected = (String) this.cbGenre.getSelectedItem();
+                if (selected != null) {
+                    this.currentGenre = selected.equals("Alle") ? "" : selected;
+                }
+                this.updateFilters(
+                        this.authorSearchText, this.authorSearchText,
+                        this.bookSearchText,
+                        this.currentGenre, this.currentPublisher
+                );
+            } catch (SQLException ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-        this.updateFilters(
-                    this.authorSearchText, this.authorSearchText,
-                    this.bookSearchText,
-                    this.currentGenre, this.currentPublisher
-            );
-        } catch (SQLException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
-        }
+
     }//GEN-LAST:event_onGenreSelected
 
     /**
