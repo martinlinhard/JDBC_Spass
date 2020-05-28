@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import utils.MergeHelper;
 
 /**
@@ -83,14 +84,31 @@ public class MainGUI extends javax.swing.JFrame {
         this.cbPublishers.setSelectedIndex(0);
     }
 
-    private MergeResult updateFilters(String firstname, String lastname, String title, String genre, String publisher) throws SQLException {
-        List<Book> books = this.dba.getBooksForCriteria(firstname, lastname, title, genre, publisher);
-        MergeResult mergeBooks = MergeHelper.mergeBooks(books);
+    private MergeResult updateFilters(String firstname, String lastname, String title, String genre, String publisher) {
+        try {
+            List<Book> books = this.dba.getBooksForCriteria(firstname, lastname, title, genre, publisher);
+            MergeResult mergeBooks = MergeHelper.mergeBooks(books);
 
-        this.allBooks = mergeBooks.getAllBooks();
+            this.allBooks = mergeBooks.getAllBooks();
 
-        this.blm.setAllBooks(allBooks);
-        return mergeBooks;
+            this.blm.setAllBooks(allBooks);
+
+            this.renderBook(this.allBooks.get(0));
+            this.bookList.setSelectedIndex(0);
+            return mergeBooks;
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error retrieving data from database!");
+            return null;
+        } catch (IndexOutOfBoundsException i) {
+            // could occur when theres no 
+            // books to display after a search
+            this.htmlOutput.setText("");
+            return null;
+        }
+    }
+
+    private void renderBook(Book b) {
+        this.htmlOutput.setText(b.renderToHTMLString());
     }
 
     /**
@@ -223,66 +241,55 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_onBtAuthorPress
 
     private void onFilterTextChanged(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_onFilterTextChanged
-        try {
-            if (this.currentSearchState == SearchState.BOOK) {
-                // change book
-                this.bookSearchText = this.tfSearchText.getText().trim();
-            } else {
-                // change author
-                this.authorSearchText = this.tfSearchText.getText().trim();
-            }
-
-            // update gui
-            this.updateFilters(
-                    this.authorSearchText, this.authorSearchText,
-                    this.bookSearchText,
-                    this.currentGenre, this.currentPublisher
-            );
-        } catch (SQLException ex) {
-            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        if (this.currentSearchState == SearchState.BOOK) {
+            // change book
+            this.bookSearchText = this.tfSearchText.getText().trim();
+        } else {
+            // change author
+            this.authorSearchText = this.tfSearchText.getText().trim();
         }
+
+        // update gui
+        this.updateFilters(
+                this.authorSearchText, this.authorSearchText,
+                this.bookSearchText,
+                this.currentGenre, this.currentPublisher
+        );
+
     }//GEN-LAST:event_onFilterTextChanged
 
     private void onBookSelected(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_onBookSelected
-        Book b = this.bookList.getSelectedValue();
-        this.htmlOutput.setText(b.renderToHTMLString());
+        this.renderBook(this.bookList.getSelectedValue());
+
     }//GEN-LAST:event_onBookSelected
 
     private void onPublisherSelected(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onPublisherSelected
 
         if (go) {
-            try {
-                String selected = (String) this.cbPublishers.getSelectedItem();
-                if (selected != null) {
-                    this.currentPublisher = selected.equals("Alle") ? "" : selected;
-                }
-                this.updateFilters(
-                        this.authorSearchText, this.authorSearchText,
-                        this.bookSearchText,
-                        this.currentGenre, this.currentPublisher
-                );
-            } catch (SQLException ex) {
-                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            String selected = (String) this.cbPublishers.getSelectedItem();
+            if (selected != null) {
+                this.currentPublisher = selected.equals("Alle") ? "" : selected;
             }
+            this.updateFilters(
+                    this.authorSearchText, this.authorSearchText,
+                    this.bookSearchText,
+                    this.currentGenre, this.currentPublisher
+            );
         }
 
     }//GEN-LAST:event_onPublisherSelected
 
     private void onGenreSelected(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onGenreSelected
         if (go) {
-            try {
-                String selected = (String) this.cbGenre.getSelectedItem();
-                if (selected != null) {
-                    this.currentGenre = selected.equals("Alle") ? "" : selected;
-                }
-                this.updateFilters(
-                        this.authorSearchText, this.authorSearchText,
-                        this.bookSearchText,
-                        this.currentGenre, this.currentPublisher
-                );
-            } catch (SQLException ex) {
-                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            String selected = (String) this.cbGenre.getSelectedItem();
+            if (selected != null) {
+                this.currentGenre = selected.equals("Alle") ? "" : selected;
             }
+            this.updateFilters(
+                    this.authorSearchText, this.authorSearchText,
+                    this.bookSearchText,
+                    this.currentGenre, this.currentPublisher
+            );
         }
 
     }//GEN-LAST:event_onGenreSelected
@@ -303,15 +310,11 @@ public class MainGUI extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(MainGUI.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
+        //</editor-fold>
+
         //</editor-fold>
 
         /* Create and display the form */
