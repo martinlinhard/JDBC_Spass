@@ -9,6 +9,7 @@ import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  *
@@ -16,7 +17,8 @@ import java.sql.SQLException;
  */
 public class DB_CachedConnection {
 
-    private PreparedStatement bookStatement;
+    private PreparedStatement managerStatement;
+    private Statement genericStatement;
 
     private Connection dbConn;
 
@@ -25,14 +27,25 @@ public class DB_CachedConnection {
     }
 
     public void setup() throws SQLException, FileNotFoundException {
-        // TODO
+        this.managerStatement = this.dbConn.prepareStatement("SELECT dm.from_date, dm.to_date, e.first_name, e.last_name\n"
+                + "FROM departments d\n"
+                + "INNER JOIN dept_manager dm ON d.dept_no = dm.dept_no\n"
+                + "INNER JOIN employees e ON e.emp_no = dm.emp_no\n"
+                + "WHERE d.dept_no = ?;");
+        this.genericStatement = this.dbConn.createStatement();
     }
 
     public void closeAllStatements() throws SQLException {
-        this.bookStatement.close();
+        this.managerStatement.close();
+        this.genericStatement.close();
     }
 
-    public PreparedStatement getBookStatement() {
-        return bookStatement;
+    public PreparedStatement getManagerStatement() {
+        return managerStatement;
+    }
+    
+    // This is used for retrieving all departments / all employees
+    public Statement getGenericStatement() {
+        return this.genericStatement;
     }
 }

@@ -5,12 +5,19 @@
  */
 package main;
 
+import beans.GenderFilter;
+import beans.SortOrder;
+import beans.SortType;
+import db.EmployeeStatementFactory;
+import java.time.LocalDate;
+
 /**
  *
  * @author martin
  */
 public class Main {
     public static void main(String[] args) {
-        System.out.println("Hello world");
+        SortType t = SortType.getInstance("NAME", SortOrder.ASC);
+        System.out.println(EmployeeStatementFactory.getStatementForInput("db003", LocalDate.MIN, GenderFilter.FEMALE, t));
     }
 }
