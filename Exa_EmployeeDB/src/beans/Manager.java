@@ -5,6 +5,8 @@
  */
 package beans;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 
 /**
@@ -23,6 +25,15 @@ public class Manager {
         this.lastname = lastname;
         this.fromDate = fromDate;
         this.toDate = toDate;
+    }
+    
+    public static Manager fromSQLSet(ResultSet rs) throws SQLException {
+        return new Manager(
+                rs.getString("first_name"), 
+                rs.getString("last_name"), 
+                rs.getDate("from_date").toLocalDate(), 
+                rs.getDate("to_date").toLocalDate()
+        );
     }
 
     public String getFirstname() {

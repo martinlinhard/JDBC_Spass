@@ -5,10 +5,17 @@
  */
 package main;
 
+import beans.Department;
+import db.DB_Access;
+import java.io.FileNotFoundException;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField.AbstractFormatter;
@@ -31,12 +38,27 @@ public class MainGUI extends javax.swing.JFrame {
     private JCheckBox cbMale;
     private JCheckBox cbFemale;
 
+    private DB_Access dba;
+
+    private List<Department> departments;
+
     /**
      * Creates new form MainGUI
      */
     public MainGUI() {
-        initComponents();
-        this.addCustomComponents();
+        try {
+            initComponents();
+            this.addCustomComponents();
+            this.dba = new DB_Access();
+            this.loadDepartments();
+        } catch (SQLException | ClassNotFoundException | FileNotFoundException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void loadDepartments() throws SQLException {
+        this.departments = this.dba.loadDepartments();
+        this.departments.stream().map(d -> d.toString()).forEach(this.dpCb::addItem);
     }
 
     private void addCustomComponents() {

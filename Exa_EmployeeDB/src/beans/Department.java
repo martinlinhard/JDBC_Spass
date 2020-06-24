@@ -5,6 +5,9 @@
  */
 package beans;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  *
  * @author martin
@@ -32,5 +35,14 @@ public class Department {
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public static Department fromSQLSet(ResultSet rs) throws SQLException {
+        return new Department(rs.getString("dept_no"), rs.getString("dept_name"));
+    }
+
+    @Override
+    public String toString() {
+        return this.name;
     }
 }

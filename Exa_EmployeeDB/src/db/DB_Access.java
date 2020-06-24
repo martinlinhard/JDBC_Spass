@@ -6,11 +6,13 @@
 package db;
 
 
+import beans.Department;
 import java.io.FileNotFoundException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -26,5 +28,14 @@ public class DB_Access {
         db.connect();
         this.cconn = new DB_CachedConnection(db.getRawConnection());
         this.cconn.setup();
+    }
+    
+    public List<Department> loadDepartments() throws SQLException {
+        ResultSet rs = this.cconn.getGenericStatement().executeQuery(DB_CachedConnection.dpStatementString);
+        List<Department> departments = new LinkedList<>();
+        while(rs.next()) {
+            departments.add(Department.fromSQLSet(rs));
+        }
+        return departments;
     }
 }

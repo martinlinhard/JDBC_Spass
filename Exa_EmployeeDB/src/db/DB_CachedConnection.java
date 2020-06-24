@@ -21,6 +21,8 @@ public class DB_CachedConnection {
     private Statement genericStatement;
 
     private Connection dbConn;
+    
+    public static String dpStatementString = "select * from departments";
 
     public DB_CachedConnection(Connection dbConn) throws SQLException {
         this.dbConn = dbConn;
