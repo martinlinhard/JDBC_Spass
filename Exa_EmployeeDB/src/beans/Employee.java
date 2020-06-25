@@ -8,6 +8,7 @@ package beans;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -22,6 +23,8 @@ public class Employee {
 
     private LocalDate birthDate;
     private LocalDate hireDate;
+
+    public static DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     public Employee(String firstname, String lastname, String gender, LocalDate birthDate, LocalDate hireDate) {
         this.firstname = firstname;
@@ -59,5 +62,13 @@ public class Employee {
 
     public LocalDate getHireDate() {
         return hireDate;
+    }
+
+    private String formatName() {
+        return String.format("%s, %s", this.lastname, this.firstname);
+    }
+
+    public Object[] toObjectArray() {
+        return new Object[]{this.formatName(), this.gender, dtf.format(this.birthDate), dtf.format(this.hireDate)};
     }
 }

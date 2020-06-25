@@ -21,7 +21,7 @@ public class EmployeeStatementFactory {
             + "WHERE \n"
             + " birth_date < {BIRTH_DATE}\n"
             + " {GENDER}"
-            + " AND d.dept_no = {DEPT_NO}'\n"
+            + " AND d.dept_no = '{DEPT_NO}'\n"
             + " ORDER BY {ORDER_TYPE};";
 
     public static String getStatementForInput(String deptno, LocalDate birthdate, GenderFilter genderFilter, SortType type) {

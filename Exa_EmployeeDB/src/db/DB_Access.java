@@ -7,10 +7,15 @@ package db;
 
 
 import beans.Department;
+import beans.Employee;
+import beans.GenderFilter;
+import beans.Manager;
+import beans.SortType;
 import java.io.FileNotFoundException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,5 +42,37 @@ public class DB_Access {
             departments.add(Department.fromSQLSet(rs));
         }
         return departments;
+    }
+    
+    public List<Employee> getEmployeesForCriteria(String deptno, LocalDate birthdate, GenderFilter genderFilter, SortType type) throws SQLException {
+        List<Employee> employees = new LinkedList<>();
+        
+        // In case no birthdate was given, we choose the current date
+        // which acts as though there was no filter applied in the first place
+        if (birthdate == null) {
+            birthdate = LocalDate.now();
+        }
+        
+        String statement = EmployeeStatementFactory.getStatementForInput(deptno, birthdate, genderFilter, type);
+                
+        ResultSet rs = this.cconn.getGenericStatement().executeQuery(statement);
+        
+        while(rs.next()) {
+            employees.add(Employee.fromSQLSet(rs));
+        }
+        
+        return employees;
+    }
+    
+    public List<Manager> getManagerForCriteria(String deptno) throws SQLException {
+        List<Manager> managers = new LinkedList<>();
+        PreparedStatement p = this.cconn.getManagerStatement();
+        p.setString(1, deptno);
+        ResultSet rs = p.executeQuery();
+        
+        while(rs.next()) {
+            managers.add(Manager.fromSQLSet(rs));
+        }
+        return managers;
     }
 }

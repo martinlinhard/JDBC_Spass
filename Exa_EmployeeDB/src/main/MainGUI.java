@@ -6,20 +6,28 @@
 package main;
 
 import beans.Department;
+import beans.Employee;
+import beans.GenderFilter;
+import beans.Manager;
+import beans.SortOrder;
+import beans.SortType;
 import db.DB_Access;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
+import org.jdatepicker.DateModel;
 import org.jdatepicker.JDatePicker;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
@@ -42,6 +50,22 @@ public class MainGUI extends javax.swing.JFrame {
 
     private List<Department> departments;
 
+    private Department currentDepartment;
+
+    private LocalDate currentBirthDate = LocalDate.now();
+
+    private GenderFilter genderFilter = GenderFilter.BOTH;
+
+    private SortType sortType = SortType.getInstance("NAME", SortOrder.ASC);
+
+    private List<Employee> employees;
+
+    private EmployeeModel elm;
+
+    private List<Manager> managers;
+
+    private DateModel dateModel;
+
     /**
      * Creates new form MainGUI
      */
@@ -50,7 +74,11 @@ public class MainGUI extends javax.swing.JFrame {
             initComponents();
             this.addCustomComponents();
             this.dba = new DB_Access();
-            this.loadDepartments();
+            this.updateDepartments();
+            this.loadEmployees();
+            this.updateManagers();
+            this.elm = new EmployeeModel(this.employees.stream().map(Employee::toObjectArray).collect(Collectors.toList()));
+            this.empTable.setModel(this.elm);
         } catch (SQLException | ClassNotFoundException | FileNotFoundException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -58,7 +86,76 @@ public class MainGUI extends javax.swing.JFrame {
 
     private void loadDepartments() throws SQLException {
         this.departments = this.dba.loadDepartments();
+        this.currentDepartment = this.departments.get(0);
+    }
+
+    private void updateDepartments() throws SQLException {
+        this.loadDepartments();
         this.departments.stream().map(d -> d.toString()).forEach(this.dpCb::addItem);
+    }
+
+    private void loadEmployees() throws SQLException {
+        this.employees = this.dba.getEmployeesForCriteria(this.currentDepartment.getDeptNo(), this.currentBirthDate, this.genderFilter, this.sortType);
+    }
+
+    private void updateEmployees() throws SQLException {
+        this.loadEmployees();
+        if (this.elm != null) {
+            this.elm.setEmployees(this.employees.stream().map(Employee::toObjectArray).collect(Collectors.toList()));
+        }
+    }
+
+    private void loadManagers() throws SQLException {
+        this.managers = this.dba.getManagerForCriteria(this.currentDepartment.getDeptNo());
+    }
+
+    private void updateManagers() throws SQLException {
+        this.loadManagers();
+        this.taManagers.setText("<html>" + this.managers.stream().map(Object::toString).collect(Collectors.joining("<br>")) + "</html>");
+    }
+
+    private void onDepartmentSelected(java.awt.event.ActionEvent evt) {
+        int index = this.dpCb.getSelectedIndex();
+        Department newDepartment = this.departments.get(index);
+        if (newDepartment != null) {
+            try {
+                this.currentDepartment = newDepartment;
+                this.updateEmployees();
+                this.updateManagers();
+            } catch (SQLException ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
+    }
+
+    private void onGenderSelected(java.awt.event.ActionEvent evt) {
+        try {
+            boolean m = this.cbMale.isSelected();
+            boolean f = this.cbFemale.isSelected();
+
+            if (m && f) {
+                this.genderFilter = GenderFilter.BOTH;
+            } else if (m) {
+                this.genderFilter = GenderFilter.MALE;
+            } else {
+                this.genderFilter = GenderFilter.FEMALE;
+            }
+
+            this.updateEmployees();
+        } catch (SQLException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void onDateChanged(java.awt.event.ActionEvent evt) {
+        this.currentBirthDate = this.cbBirthdate.isSelected()
+                ? LocalDate.of(this.dateModel.getYear(), this.dateModel.getMonth(), this.dateModel.getDay()) : null;
+        try {
+            this.updateEmployees();
+        } catch (SQLException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     private void addCustomComponents() {
@@ -80,8 +177,20 @@ public class MainGUI extends javax.swing.JFrame {
         this.jdp = new JDatePickerImpl(datePanel, new DateLabelFormatter());
         this.filterPanel.add(this.jdp);
 
+        this.cbMale.setSelected(true);
+        this.cbFemale.setSelected(true);
+
         this.filterPanel.add(this.cbMale);
         this.filterPanel.add(this.cbFemale);
+
+        this.dpCb.addActionListener(this::onDepartmentSelected);
+        this.cbMale.addActionListener(this::onGenderSelected);
+        this.cbFemale.addActionListener(this::onGenderSelected);
+
+        this.dateModel = datePanel.getModel();
+
+        datePanel.addActionListener(this::onDateChanged);
+        this.cbBirthdate.addActionListener(this::onDateChanged);
     }
 
     /**
@@ -96,11 +205,11 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         filterPanel = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTextArea1 = new javax.swing.JTextArea();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        taManagers = new javax.swing.JEditorPane();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
+        empTable = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridLayout(1, 2));
@@ -114,11 +223,11 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Management"));
         jPanel4.setLayout(new java.awt.GridLayout(1, 1));
 
-        jTextArea1.setColumns(20);
-        jTextArea1.setRows(5);
-        jScrollPane2.setViewportView(jTextArea1);
+        taManagers.setEditable(false);
+        taManagers.setContentType("text/html"); // NOI18N
+        jScrollPane3.setViewportView(taManagers);
 
-        jPanel4.add(jScrollPane2);
+        jPanel4.add(jScrollPane3);
 
         jPanel1.add(jPanel4);
 
@@ -127,7 +236,7 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Data"));
         jPanel2.setLayout(new java.awt.GridLayout(1, 1));
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+        empTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
                 {null, null, null, null},
                 {null, null, null, null},
@@ -138,7 +247,7 @@ public class MainGUI extends javax.swing.JFrame {
                 "Title 1", "Title 2", "Title 3", "Title 4"
             }
         ));
-        jScrollPane1.setViewportView(jTable1);
+        jScrollPane1.setViewportView(empTable);
 
         jPanel2.add(jScrollPane1);
 
@@ -183,14 +292,14 @@ public class MainGUI extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTable empTable;
     private javax.swing.JPanel filterPanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextArea jTextArea1;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JEditorPane taManagers;
     // End of variables declaration//GEN-END:variables
 
     public class DateLabelFormatter extends AbstractFormatter {
