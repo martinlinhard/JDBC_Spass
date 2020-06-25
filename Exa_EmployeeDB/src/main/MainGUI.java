@@ -5,6 +5,7 @@
  */
 package main;
 
+import gui.EmployeeModel;
 import beans.Department;
 import beans.Employee;
 import beans.GenderFilter;
@@ -12,6 +13,10 @@ import beans.Manager;
 import beans.SortOrder;
 import beans.SortType;
 import db.DB_Access;
+import gui.ColumnWrapper;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.text.ParseException;
@@ -27,8 +32,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
+import javax.swing.table.JTableHeader;
 import org.jdatepicker.DateModel;
-import org.jdatepicker.JDatePicker;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
@@ -65,6 +70,8 @@ public class MainGUI extends javax.swing.JFrame {
     private List<Manager> managers;
 
     private DateModel dateModel;
+
+    private ColumnWrapper wrapper = new ColumnWrapper();
 
     /**
      * Creates new form MainGUI
@@ -191,6 +198,10 @@ public class MainGUI extends javax.swing.JFrame {
 
         datePanel.addActionListener(this::onDateChanged);
         this.cbBirthdate.addActionListener(this::onDateChanged);
+
+        // Add listener for sorting
+        JTableHeader header = empTable.getTableHeader();
+        header.addMouseListener(new TableHeaderListener());
     }
 
     /**
@@ -322,5 +333,36 @@ public class MainGUI extends javax.swing.JFrame {
             return "";
         }
 
+    }
+
+    private class TableHeaderListener extends MouseAdapter {
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            Point point = e.getPoint();
+            int column = empTable.columnAtPoint(point);
+            SortOrder order = wrapper.flipAndFetch(column);
+
+            switch (column) {
+                case 0:
+                    sortType = SortType.getInstance("NAME", order);
+                    break;
+                case 1:
+                    sortType = SortType.getInstance("GENDER", order);
+                    break;
+                case 2:
+                    sortType = SortType.getInstance("BIRTHDATE", order);
+                    break;
+                case 3:
+                    sortType = SortType.getInstance("HIREDATE", order);
+                    break;
+            }
+
+            try {
+                updateEmployees();
+            } catch (SQLException ex) {
+                Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 }
