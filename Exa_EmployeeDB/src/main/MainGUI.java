@@ -51,7 +51,7 @@ public class MainGUI extends javax.swing.JFrame {
     private JCheckBox cbMale;
     private JCheckBox cbFemale;
 
-    private DB_Access dba;
+    public DB_Access dba;
 
     private List<Department> departments;
 
@@ -84,7 +84,7 @@ public class MainGUI extends javax.swing.JFrame {
             this.updateDepartments();
             this.loadEmployees();
             this.updateManagers();
-            this.elm = new EmployeeModel(this.employees.stream().map(Employee::toObjectArray).collect(Collectors.toList()));
+            this.elm = new EmployeeModel(this.employees, this);
             this.empTable.setModel(this.elm);
         } catch (SQLException | ClassNotFoundException | FileNotFoundException ex) {
             Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
@@ -108,7 +108,7 @@ public class MainGUI extends javax.swing.JFrame {
     private void updateEmployees() throws SQLException {
         this.loadEmployees();
         if (this.elm != null) {
-            this.elm.setEmployees(this.employees.stream().map(Employee::toObjectArray).collect(Collectors.toList()));
+            this.elm.setEmployees(this.employees);
         }
     }
 

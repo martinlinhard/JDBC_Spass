@@ -18,10 +18,12 @@ import java.sql.Statement;
 public class DB_CachedConnection {
 
     private PreparedStatement managerStatement;
+    private PreparedStatement updateFirstLastNameStatement;
+    private PreparedStatement updateHiredateStatement;
     private Statement genericStatement;
 
     private Connection dbConn;
-    
+
     public static String dpStatementString = "select * from departments";
 
     public DB_CachedConnection(Connection dbConn) throws SQLException {
@@ -35,19 +37,31 @@ public class DB_CachedConnection {
                 + "INNER JOIN employees e ON e.emp_no = dm.emp_no\n"
                 + "WHERE d.dept_no = ?;");
         this.genericStatement = this.dbConn.createStatement();
+        this.updateFirstLastNameStatement = this.dbConn.prepareStatement("UPDATE employees SET first_name = ?, last_name = ? WHERE emp_no = ?;");
+        this.updateHiredateStatement = this.dbConn.prepareStatement("UPDATE employees SET hire_date = ? WHERE emp_no = ?;");
     }
 
     public void closeAllStatements() throws SQLException {
         this.managerStatement.close();
+        this.updateFirstLastNameStatement.close();
+        this.updateHiredateStatement.close();
         this.genericStatement.close();
     }
 
     public PreparedStatement getManagerStatement() {
         return managerStatement;
     }
-    
+
     // This is used for retrieving all departments / all employees
     public Statement getGenericStatement() {
         return this.genericStatement;
+    }
+
+    public PreparedStatement getUpdateFirstLastNameStatement() {
+        return updateFirstLastNameStatement;
+    }
+
+    public PreparedStatement getUpdateHiredateStatement() {
+        return updateHiredateStatement;
     }
 }
