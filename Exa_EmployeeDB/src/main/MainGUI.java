@@ -10,6 +10,7 @@ import beans.Department;
 import beans.Employee;
 import beans.GenderFilter;
 import beans.Manager;
+import beans.SalaryHistory;
 import beans.SortOrder;
 import beans.SortType;
 import db.DB_Access;
@@ -32,6 +33,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFormattedTextField.AbstractFormatter;
 import javax.swing.JLabel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.JTableHeader;
 import org.jdatepicker.DateModel;
 import org.jdatepicker.impl.JDatePanelImpl;
@@ -107,6 +110,7 @@ public class MainGUI extends javax.swing.JFrame {
 
     private void updateEmployees() throws SQLException {
         this.loadEmployees();
+        this.setSalHisForEmpno(this.employees.get(0).getEmpno());
         if (this.elm != null) {
             this.elm.setEmployees(this.employees);
         }
@@ -202,6 +206,18 @@ public class MainGUI extends javax.swing.JFrame {
         // Add listener for sorting
         JTableHeader header = empTable.getTableHeader();
         header.addMouseListener(new TableHeaderListener());
+
+        //Listener for showing the salary
+        this.empTable.getSelectionModel().addListSelectionListener(new TableSelectionListener());
+    }
+
+    private void setSalHisForEmpno(int empno) {
+        try {
+            List<SalaryHistory> his = dba.retrieveSalaryForEmployee(empno);
+            taSalaryHistory.setText(his.stream().map(s -> s.toString()).collect(Collectors.joining("<br>")));
+        } catch (SQLException ex) {
+            Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -221,9 +237,12 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         empTable = new javax.swing.JTable();
+        jPanel3 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        taSalaryHistory = new javax.swing.JEditorPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        getContentPane().setLayout(new java.awt.GridLayout(1, 2));
+        getContentPane().setLayout(new java.awt.GridLayout(1, 3));
 
         jPanel1.setLayout(new java.awt.GridLayout(2, 1));
 
@@ -263,6 +282,16 @@ public class MainGUI extends javax.swing.JFrame {
         jPanel2.add(jScrollPane1);
 
         getContentPane().add(jPanel2);
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createTitledBorder("Salary History")));
+        jPanel3.setLayout(new java.awt.GridLayout());
+
+        taSalaryHistory.setContentType("text/html"); // NOI18N
+        jScrollPane2.setViewportView(taSalaryHistory);
+
+        jPanel3.add(jScrollPane2);
+
+        getContentPane().add(jPanel3);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -307,10 +336,13 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JPanel filterPanel;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JEditorPane taManagers;
+    private javax.swing.JEditorPane taSalaryHistory;
     // End of variables declaration//GEN-END:variables
 
     public class DateLabelFormatter extends AbstractFormatter {
@@ -364,5 +396,23 @@ public class MainGUI extends javax.swing.JFrame {
                 Logger.getLogger(MainGUI.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+    }
+
+    private class TableSelectionListener implements ListSelectionListener {
+
+        @Override
+        public void valueChanged(ListSelectionEvent lse) {
+            int row = empTable.getSelectedRow();
+
+            // no row selected --> clear pane
+            if (row == -1) {
+                taSalaryHistory.setText("");
+                return;
+            }
+
+            Employee emp = employees.get(row);
+            setSalHisForEmpno(emp.getEmpno());
+        }
+
     }
 }

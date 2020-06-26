@@ -20,6 +20,7 @@ public class DB_CachedConnection {
     private PreparedStatement managerStatement;
     private PreparedStatement updateFirstLastNameStatement;
     private PreparedStatement updateHiredateStatement;
+    private PreparedStatement retrieveSalaryStatement;
     private Statement genericStatement;
 
     private Connection dbConn;
@@ -39,6 +40,7 @@ public class DB_CachedConnection {
         this.genericStatement = this.dbConn.createStatement();
         this.updateFirstLastNameStatement = this.dbConn.prepareStatement("UPDATE employees SET first_name = ?, last_name = ? WHERE emp_no = ?;");
         this.updateHiredateStatement = this.dbConn.prepareStatement("UPDATE employees SET hire_date = ? WHERE emp_no = ?;");
+        this.retrieveSalaryStatement = this.dbConn.prepareStatement("SELECT salary, from_date, to_date FROM salaries WHERE emp_no = ?;");
     }
 
     public void closeAllStatements() throws SQLException {
@@ -63,5 +65,9 @@ public class DB_CachedConnection {
 
     public PreparedStatement getUpdateHiredateStatement() {
         return updateHiredateStatement;
+    }
+
+    public PreparedStatement getRetrieveSalaryStatement() {
+        return retrieveSalaryStatement;
     }
 }

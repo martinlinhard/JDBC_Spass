@@ -9,6 +9,7 @@ import beans.Department;
 import beans.Employee;
 import beans.GenderFilter;
 import beans.Manager;
+import beans.SalaryHistory;
 import beans.SortType;
 import java.io.FileNotFoundException;
 import java.sql.Date;
@@ -89,5 +90,16 @@ public class DB_Access {
         p.setDate(1, Date.valueOf(e.getHireDate()));
         p.setInt(2, e.getEmpno());
         p.executeUpdate();
+    }
+
+    public List<SalaryHistory> retrieveSalaryForEmployee(int empno) throws SQLException {
+        List<SalaryHistory> salaries = new LinkedList<>();
+        PreparedStatement p = this.cconn.getRetrieveSalaryStatement();
+        p.setInt(1, empno);
+        ResultSet rs = p.executeQuery();
+        while (rs.next()) {
+            salaries.add(SalaryHistory.fromSQLSet(rs));
+        }
+        return salaries;
     }
 }
